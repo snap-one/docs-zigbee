@@ -160,3 +160,158 @@ Confirm device under test allows setting and getting the following attributes on
 1. Write announce window to arbitrary value using Profile 0xC25D Cluster 0x0001 Attribute 0x0001. Read back announce window and confirm it was set.
 2. Write MTORR period to arbitrary value using Profile 0xC25D Cluster 0x0001 Attribute 0x0002. Read back MTORR period and confirm it was set.
 3. Confirm the device performs announcements according to "Adheres to compatible announcement behavior" below
+
+
+## Device performs compatible announcement behavior
+
+End devices and routers both must periodically send announcement information for Zserver to discover the device and mark it online. The period is configurable and is based upon the period of sending Many-To-One-Route-Requests (MTORRs). For routers, this period is communicated to the device using Profile 0xC25D Cluster 0x0001 Attribute 0x0001 (ANNOUNCE_WINDOW) and (0x0002 MTORR_PERIOD). 
+
+See [Control4 ZCL Network Cluster Definition Document v1.09 ]()
+
+Validation:
+
+1. Send an MTORR.
+2. Confirm device sends an announcement within the announce window specified. 
+3. Confirm the announcement contains the source EUI64 as part of the APS frame.
+4. For multiple MTORR requests, confirm device randomizes response intervals. Announcements should be sent on different intervals ranging from 1 to n seconds, where n is the announce window configured through attribute 0x0001.
+5. Confirm routing devices respond to access point requests for attribute 0x0008, 0x0009, and 0x000A with a preferred access point. Add a secondary zap, force the parent router to prefer this zap, and confirm this access point communicated to an end device with attributes 0x0008, 0x0009, 0x000A changes accordingly.
+6. Configure a network with 2 access points. Send MTORR's from each access point. Confirm the number of zaps attribute reflects the number of zaps that have sent out MTORR's on the network. 
+7. Repeat step 5 with 3 access points.
+8. Confirm boot count increments each time the device power cycles.
+
+
+## Implements access point request to parent router to determine best access point
+
+In a mesh network with more than one access point (Zap), end devices must request the access point information from the parent router prior to sending messages. For end devices, this request should occur after rejoining. The end device must send a request for attributes 0x0008 (access point node id), 0x0009 (access point long id), and 0x000A (access point cost) to a parent router. The requests should occur on Profile 0xC25D and Cluster 0x0001. The parent router must respond with the attributes matching the "best" access point. If the access point is artificially forced to a new node id, the parent router should discover this after 3 MTORR periods, and subsequent communication to a joining or rejoining end device should also match. The end device should use the discovered access point any time it sends asynchronous messages.
+
+Validation:
+
+1. For end devices, ensure the requests are being sent to the parent router for Profile 0xC25D Cluster 0x0001, Attributes 0x0008, 0x0009, 0x000A.
+2. For end device, ensure no messages are sent to an access point until all of these attributes have been requests and responded to (e.g. device does not trigger node id conflict on parent router).
+3. For routers, ensure all attributes requested are responded to.
+4. For routers, ensure as the access point changes, the attributes describing the access point match.
+
+
+## Implements Control4 lost node behavior or equivalent
+
+In the event of a channel change or PAN ID conflict, it is possible for nodes to become abandoned without a viable communication path to an access point. In these events, the device must automatically trigger a lost behavior, where it will seek out the network on the correct channel and PAN. This typically occurs through a rejoin process, first on the channel the device was on, and subsequently on all channels until the network is found. To avoid flooding a network in large installations, the device must not attempt this process more rapidly than once every 10 seconds. After the initial attempt, the device must extend the rejoin interval. Doubling the rejoin interval is recommended, until once per hour is reached. The recommended interval for starting the discovery process is 3 times the MTORR period + 9 seconds for broadcast propagation (configured through Profile 0xC25D Cluster 0x0001 Attribute 0x0002). The rejoin interval must scale based upon the number of Zaps (configured through Profile 0xC25D Cluster 0x0001 Attribute 0x0003). For example, if a device goes lost and seeks a network after 3 MTORR period intervals in a single Zap environment, it must allow for 3x3=9 MTORR periods (+9 seconds) in a 3 Zap environment. This is to handle the case where 2 out of 3 Zaps are not reachable by the device under test, plus maximum broadcast propagation delay.  Upon rejoining a network, the device must attempt to discover the access point on the given channel. The recommended method is to broadcast a manufacturer specific SSCP_REQUEST_PARAMS_COMMAND_ID 0x06 on Profile 0xC25D Cluster 0x0001. Upon receipt of this command, Zserver will broadcast a set channel attribute request on Profile 0xC25D Cluster 0x0001 Attribute 0x000C. The function of the set channel attribute request is twofold: 
+
+1. It ensures there is an access point on the PAN able to communicate to the lost device.
+2. It ensures the lost device is on the correct channel in cases of ghosting behavior (receiving messages on the incorrect channel).  Upon receipt the set channel attribute request, the device under test should compare the current channel to the channel attribute, and if they differ, switch channels to match. Devices that hear this request, including a device under test, should pause sending out their own requests pending a broadcast Zserver set channel attribute request. The design is intended to allow multiple devices to receive the SSCP_REQUEST_PARAMS_COMMAND_ID request signaling a node is lost, and also receive the associated broadcast set channel attribute request that allows them to determine if an access point is found and on what channel.  The pause delay should be randomized between 18 - 30 seconds to allow the broadcast request to propagate the subsequent set channel request to be received, and to provide an extra window for random jitter from requests from multiple nodes.  
+
+Validation:
+
+1. Setup a mesh with a controller and device under test.
+2. Ensure the device under test cannot receive messages from the controller.
+3. Change channels on the controller. This should leave the device under test on the wrong channel.
+4. Ensure the device correct returns to the mesh after 30 minutes.
+5. Setup a mesh with a controller, a Control4 router, and the device under test. 
+6. Send a message to the Control4 router configuring the MTORR period to 0. This configures Control4 routers to never enter lost mode and attempt rejoins. 
+7. Ensure the device under test and the router cannot receive messages from the controller. 
+8. Change the channel on the controller. This should leave the router and the device under test on the wrong channel.
+9. Ensure the device under test migrates away from the router on the wrong channel, and back to the controller on the correct channel. This tests access point detection during lost behavior to prevent islands of routers on incorrect channel.
+
+
+## Implements HA standard polling and fast polling intervals 
+
+In their normal operating state, ZigBee end devices shall poll no more frequently than once every 7.5 seconds, except where the cluster specification indicates.  ZigBee end devices may operate with a higher polling rate during commissioning, network maintenance, alarm states, and for short periods after transmitting a message to allow for acknowledgments and or responses to be received quickly, but they must return to the standard rate indicated previously during normal operation.  If a device under test implements fast polling, the device should also implement the poll control cluster. This cluster allows configuring how the device fast polls. Attribute 0x0001 is the long poll interval in quarter seconds. Attribute 0x0002 is the short poll interval in quarter seconds. Attribute 0x0003 is the fast poll timeout in quarter seconds. When configured for fast polling, the device under test should not send messages any faster than once per quarter second and should automatically revert to the long polling interval after the configured fast polling timeout in quarter seconds. See the following documents for details: 
+
+- docs-11-5474-59-00ha-zigbee-home-automation-profile-1-2-revision-for-053520r29.pdf 
+- 07-5123-06-zigbee-cluster-library-specification.pdf
+
+Validation: 
+
+1. Verify the device under test does not poll more frequently than once every 7.5 seconds under normal use cases.
+2. Verify that the device does not poll faster than 4 times per second in fast polling use cases.
+3. Verify that the device reverts to a long polling interval (\> 7.5 seconds) after short polling completes. 
+4. If the device supports the poll control cluster, very that setting the fast polling timeout reverts from the short poll interval to the long poll interval.
+
+
+## Implemented on a tested baseline "compatible" stack version and vendor
+
+Stack variants, and silicon implementations, can have varying routing capabilities. Methods of calculating link cost are varied, and depend upon vendor, or sometimes even within the same vendor. This can create “hot” routes, where all nodes in an installation will migrate to routing through a single node or node type. This was highlighted recently with a particular vendor, which had a fundamental shift in cost calculation from bit-error rate calculation to RSSI based calculations on a silicon revision. This change introduced route selection which favored extremely poor links due to imbalance in the link cost calculation and subsequent link status exchanges. Similar problems may occur with silicon from different vendors. Unfortunately, the ZigBee specification allows for variance in this regard between stack vendors. As a baseline, ensuring the device under test uses a stack that has undergone interoperability testing at an approved ZigBee Alliance test house (NTS or equivalent). Secondary, link cost can be observed monitoring the link status exchanges between routing nodes. These should balance with surrounding nodes, based upon receive sensitivity and transmit power of the device under test. 
+
+Validation:
+
+1. Verify the stack has passed core stack interoperability testing and certification with one of the test houses. See "Certification Test Houses". Confirm the device stack is GA release, and has passed core stack interoperability testing and certification with one of the test houses. See "Certification Test Houses"
+2. Verify routing behavior does not favor or avoid device under test due to link cost calculation.
+
+
+## EVM less than 15%
+
+EVM (Error Vector Magnitude) is a measure of transmitter performance compared to an ideal transmitter. EVM is measured in absolute or offset values. For the purposes of Control4 certification, offset EVM is the primary factor of interest. 802.15.4 allows for up to 35% offset EVM, but EVM is not a single metric. A number of transmitter characteristics can contribute to EVM.  Some silicon, Silicon Labs parts for example, are more stringent about some of the contributing factors that lead to high EVM. For this reason, Silicon Labs recommends limiting a transmitter to below 15% offset EVM to ensure reliable communications. Other vendors may have similar requirements. Control targets 15% offset EVM as the threshold for expected performance, which is more stringent than the ZigBee specification requires. Offset EVM above 15% will typically only be encountered in older external LNA/PA designs, and should not be an issue for newer silicon and LNA/PA designs.   
+
+Validation:
+
+Validation for offset EVM requires special hardware, test equipment, and environment. Usually an electrical engineer will be involved in this testing. The general requirements are as follows:
+
+1. Obtain or modify hardware for coax connector. If device under test already has a coax connector, this step can be skipped. 
+2. Obtain and load a manufacturing test image on the device under test, or enter into manufacturing test mode if this function is already provided existing firmware. 
+3. Connect RF analyzer via coax connection (Control4 uses Agilent analyzer). 
+4. Using manufacturer specific method for generating a transmit stream, measure offset EVM. Values above 15% offset EVM indicate a transmit problem that should be addressed in hardware.
+
+
+**Notes:** 
+The failure mode introduced by high offset EVM can be difficult to diagnose. The typical failure mode will be excessive retries at the 802.15.4 MAC layer to deliver messages and obtain associated MAC acks. This is usually unidirectional in nature, since only one side is having a transmit problem, and it can appear that the receiver is having a problem. It is not possible to directly see high offset EVM in a sniffer, but there are some indicators. Lower than expected LQI and cost in link status exchanges is one key indicator. Both transmit and receive LQI are reflected in link status exchange cost. The indicator would not be from the node having transmit problems, but instead from a neighboring node reflecting how well it is receiving messages from this device. Another indicator is that a sniffer may not "hear" the transmitting node, even in close proximity. This combined with excessive MAC layer retries to a particular node (indicating the MAC acks are also not being received by the transmitting node) can be an indicator of high offset EVM. Control4 has found some sniffers are able to receive packets with higher offset EVM than others. Sniffing from two independent sniffers, one based upon AVR/2420 architecture for example, and one based upon Em250/35x, can provide more evidence. The AVR sniffer will decode the packets whereas the Em250/35x sniffer will not. Note that this is not sufficient to identify high offset EVM. Other factors, like interrupt handling implementation in firmware, could also produce a failure to MAC ack incoming messages. This is why an EVM analysis is required to measure offset EVM value of a particular device. Also be aware that other changes can introduce (or resolve) EVM issues over the life of a product. For instance, a minor change in hardware (e.g. changing a capacitor), extreme temperature changes triggering radio recalibration, and transmit power settings clipping the PA of a transmitter have all been found to generate offset EVM in excess of 15%. Regular testing and diligence on the part of hardware manufacturers and firmware developers is important to ensure EVM is within specifications.
+
+
+Support for Distributed Trust Center mode
+The entity on a ZigBee network that handles security and key exchanges is called a Trust Center. There are two method of handling security: Centralized Trust Center (CTC) and Distribute Trust Center(DTC). The HA standard method prior to ZigBee 3.0 is CTC. This mode requires devices authenticate and receive keys from a central authority called the coordinator. If the central authority fails, the key information must be transferred to a new centralized trust center. It also requires that there is a coordinator on the network. The concept of coordinator can introduce some negative use cases. Nodes track coordinators differently that every other device in the network and cannot resolve conflicts with multiple coordinators automatically as they can with other nodes (e.g. node id conflict resolution).
+Control4 uses DTC mode for all routers. This mode is also now part of the specification for ZigBee 3.0 devices. This allows association to any router within the system, and can remove the concept of coordinator. This has a couple of advantages, in that it eliminates a central point of failure for security management, and it makes address conflict resolution feasible in all use cases. It also allows any device to form a secure network. 
+Validation:
+1.	Using a sniffer, confirm that the apsTrustCenterAddress is all 0xFFFFFFFFFFFFFFFF (e.g. Transport Key (NWK)→ZigBee Application Support Command→Source Address = 0xFFFFFFFFFFFFFFFF), indicating a Distributed Security network per docs-05-3474-21-0csg-zigbee-specification.pdf section . If the apsTrustCenterAddress is any other value, it indicates a Centralized Security network.
+
+ 
+Uses Control4 compatible stack configuration and SAS attribute set
+The following is a stack configuration, and therefore part of the compiled firmware image. These values are must be confirmed with the firmware developer for each vendor specific product. Hops, poll interval, and child table count apply only to routing devices. 
+
+Validation:
+Confirm with the vendor the device under test is configured with the following SAS and attribute set.
+1.	Stack profile = 2 (Pro)
+2.	Protocol version = 2 (rev 17 (2007) or later)
+3.	Security level = 5 (secure)
+4.	Maximum hops = 10 (Need test method)
+5.	End-device poll timeout and timeout shift of \>= 320 seconds (Need test method)
+1.	end device poll timeout = 255
+2.	end device poll timeout shift \>= 6
+6.	End-device child count \> 6 
+7.	Child table timeout
+
+Implements access point tracking algorithm for 3 or more access points
+For routing devices to track multiple ZigBee access points, they must implement a Control4 specific algorithm. Zserver is designed to round robin through Zaps, sending an MTORR from each Zap in sequential fashion. It is expected a device receiving these messages will prioritize Zaps based upon path cost to the sender of the MTORR (also called the concentrator in Many-To-One routing). The "best" access point will be the access point with the lowest path cost. Path cost is proportionality to intermediate hop cost of the route traversal of the MTORR message. Poor cost can be simulated by introducing a poor hop, such as through transmitter attenuation. As attenuation increases, path cost will also increase. As path cost may change over time, it is expected that the routing device will automatically transition to a new access point if it becomes a better destination. It is also expected that the device under test will not simply follow the last access point to send an MTORR. This would indicate a firmware implementation that does not track a best access point. Zserver selects source routes based upon the route record of any message received from a device that is not an announcement. This route should be the route for the "best" access point (whereas the announcement route is simply the route to the last access point to send an MTORR). APS ack routes apply, so simply sending a ping to the device can trigger an APS route back to a "best" access point. The best indicator, however, is an asynchronous message (e.g. a trap), since this must follow a path defined by an address table entry on the device under test.
+Validation:
+1.	Setup a mesh network with 3 Zaps and the routing device under test.
+2.	Allow the mesh to proceed through one cycle of MTORR's being sent from each Zap.
+3.	Send an MTORR out each Zap under normal conditions, with roughly equal path cost. 
+4.	Find the Zap currently being used as the best access point for the device under test. Ensure the device under test selects one, and uses this access point for asynchronous messages after receiving MTORR's from other access points. On a backchannel device, query the device. On a device with no backchannel, send asynchronous unicast (e.g. a trap) from the device by generating an event. 
+5.	Attenuate the signal on 2 of the 3 Zaps (e.g. remove the antennas).
+6.	Allow the round robin interval to proceed across all Zaps (configurable in zserver.conf, default 15 minutes for 3 Zaps).
+7.	Find the Zap currently being used as the best access point for the device under test. On a backchannel device, query the device. On a device with no backchannel, send an asynchronous unicast (e.g. a trap) from the device by generating an event. This should match the Zap with a normal signal level (e.g the one with an antenna)
+8.	Repeat steps 3-5 with the other Zaps. Ensure the device under test best access point is following the Zap that has normal transmit capability. 
+
+ZigBee Certification Test Houses
+
+United States
+National Technical Systems Inc.
+Contact:
+Mr. Raymond Chung
+ph: +1 (310) 641-7700 ext: 1056
+e: raymond.chung@nts.com
+
+Europe
+TÜV Rheinland Group
+Contact:
+Mr. Henk Veldhuis
+ph: +32 427 310863 
+e: henk.veldhuis@de.tuv.com
+
+Certification Contact for Control4
+
+Control4
+Contact:
+Quyen Dungan
+11734 S. Election Road
+Draper, UT 84020-6432
+ph: +1 (801)-523-4223
+e: qdungan@control4.com
+
