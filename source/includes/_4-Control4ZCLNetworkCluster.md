@@ -256,3 +256,94 @@ The request for an immediate announce may be unicast, or it may be broadcast to 
 This command is usually used to correct communications problems where a Control4 Controller does not have enough information about a particular node. In these cases, it is typically sent broadcast in order to generate a new Announcement back to itself. In that case, the target node id list must be used to limit the number of responders to those the Control4 Controller is interested in. 
 
 
+## Announcements
+
+### Mandatory Attribute Reporting (Announcements)
+
+Many of the Control4 Network Cluster attributes should be reported to the ZServer process on a Control4 Controller when a device reboots, joins, or rejoins the network.  This is referred to as “Announcing”. The attributes being reported allow the Control4 Controller to update local state information about the device in the network, establish proper routes to reach the device, and correct any error conditions should they occur. The device should send in as many report attribute messages is required to fit the mandatory attributes. A minimal announcement can be used (as described below) to allow them all to be sent in a single packet, if desired. This can help preserve network bandwidth on a whole system restart, such as might occur after a brief power outage. 
+
+On a regular interval, the device should send in an announcement unicast. If all the attributes do not fit within a single announcement, the device may send some attributes on one announcement, and the rest on another.  The frequency of sending each announcement is defined by the ANNOUNCE_WINDOW for end devices. The only side effect of not send them frequently enough is that the device may show up as “offline” after several ANNOUNCE_WINDOW intervals have expired without the system Controller hearing from the device. The device will appear online again on the next incoming message, however. Devices that sleep for extended periods may therefore show up as offline, but this doesn’t negatively affect communications in any way. 
+
+
+### Control4 Identification Process (Identifying)
+
+When a node reboots or joins a network, it should send in all of its Control4 Network attributes via one or more ZigBee broadcasts (destination = 0xFFFC).  This broadcast is identical to the Control4 System Controller in the commissioning process, and is referred to as “Control4 Identification”, or “Identifying”.  It also required that the device be able to send in the attribute report broadcast with a physical interaction, such as with a button push, in order to be able to re-identify a device that has already been joined the network. On Control4 devices, this is typically triggered by 4-tapping a button. This identification process binds individual nodes to the appropriate Control4 driver within the Control4 Controller.
+
+An “Identify” and an “Announcement” contain the same attributes and packet format. The former is simply sent broadcast on a button tap sequence, when rebooting, or when joining the first time (cases when there may not be a route to a Controller). The latter is sent when rejoining, and periodically to stay “online” with the Control4 Controller. Since excessive broadcasts on a ZigBee network can degrade network performance, broadcasts are only used for this purpose in limited situations. 
+
+
+### Minimal Announcement or Identify
+
+While the above sections describe the full implementation of Control4 network handling used by Control4, this is not required for a device to be part of a Control4 network. A single message containing a subset of the attributes described above can be used to both “identify” a device, and to “announce” to stay online within the network.  These are referred to as minimal “Announcement” or “Identify”, depending upon the use case, and are described as follows: 
+
+An “Announcement” is a unicast sent to a coordinator every few minutes to keep a node “Online”.  While an Announcement is intended to contain a dynamic set of attributes, the “Announcement” containing hardcoded values provided below will also serve the same function in a simple static form. This can be useful when first developing a new device to be used within the Control4 system. 
+
+An “Identify” is the exact same packet as an “Announcement”, but is sent broadcast to short address 0xFFFC instead of unicast. This still uses the same profile and cluster as the Announcement.  An Identify is used to notify Director and drivers of a node joining the network for the first time, and to populate the Identify window within Composer. It is also often used when a device reboots as it may not have a valid Control4 access point to send to yet, so a broadcast is used to reach any within range. Broadcasts should not be used regularly to keep a node “Online” however, as hundreds of devices implementing this behavior could degrade network bandwidth considerably. 
+
+The normal sequence for sending these messages is as follows: 
+
+1. Join network using the stack provided method.
+2. Send out an “Identify” after joining to populate the identify window.
+3. Then send out “Announcements” every few minutes to keep the device online.
+
+In the case of a unicast Announcements, sending this message every 5-10 minutes is sufficient to keep a node online as determined by the Control4 Controller. To preserve bandwidth with many devices, it is recommend that a random jitter be introduced when sending this message (say once every 15-300 seconds), and re-randomized after each announcement. This prevents blocks of nodes from repeatedly sending their Announcements in sync, such as might occur after a brief power outage affects an entire home. 
+
+The “Announce” or “Identify” packets are sent using the following parameters:
+
+ZCL message type: report attributes (0x0a)
+ProfileId: 0xc25d
+ClusterId: 0x0001
+Endpoint: anything but 0x00 or 0xff
+
+Here are the minimal ZCL attributes you’ll need to populate the “Announce” or “Identify” packet.
+
+AttributeId 0x0007
+AttributeType 0x42
+AttributeValue = length+"PROD_STRING_MAKE_IT_LESS_THAN_8_CHARS"
+  
+AttributeId 0x0004
+AttributeType 0x42
+AttributeValue = length+"01.01.01"
+  
+AttributeId 0x0005
+AttributeType 0x20
+AttributeValue 0x03
+  
+AttributeId 0x0006
+AttributeType 0x21
+AttributeValue = 0x0130
+  
+AttributeId 0x0000
+AttributeType 0x20
+AttributeValue = 0x02
+  
+AttributeId 0x0001
+AttributeType 0x21
+AttributeValue 0x0123
+  
+AttributeId 0x0002
+AttributeType 0x21  
+AttributeValue 0x012c
+  
+AttributeId 0x0003
+AttributeType 0x20
+AttributeValue 0x01
+  
+AttributeId 0x000b
+AttributeType 0x21
+AttributeValue 0x012c
+  
+AttributeId 0x000c
+AttributeType 0x20
+AttributeValue 0x0b
+  
+  
+When sending these attributes, be sure to implement the correct endian-ness according to the ZCL specification (i.e. little endian byte order). Sending the incorrect byte order is the most common error encountered for “Identify” or “Announcement” packets.  As an example, an attribute record 0x0001 containing an unsigned 16-bit value (datatype 0x21) with a value of 0x1234:
+
+AttributeId 0x0001
+AttributeType 0x21
+AttributeValue 0x1234
+
+Would be sent over the air in little endian byte order as 0100213412
+
+
