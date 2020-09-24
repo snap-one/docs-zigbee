@@ -161,4 +161,98 @@ This attribute indicates the over the air reflash algorithm the device supports.
 This attribute indicates how many times the device has rebooted. Typically, this is stored in NVS, incremented each time the device reboots, and only reset upon a factory reset procedure. It may be helpful to not roll this value at 0xFFFF, since this typically indicates a problem. This can be helpful in determining some hardware failure modes that may be causing a devices to reboot repeatedly. 
 
 
+### PRODUCT_STRING Attribute_
+
+This attribute is a string that uniquely describes the device. It must be unique to the device SKU, and match the DriverWorks driver “search type”.  It is the string that a Control4 Controller uses to match the device with the appropriate Control4 system driver.
+
+A vendor namespace convention is typically used for this string of “vendor:product type:model number”.  Here is an example of a Control4 Product string: 
+
+“c4:light_ip_control4:ldz-101-w:”
+
+Here would be an example of a third party product string: 
+
+“acme:mouse_trap:amt-11-22-33:”
+
+The vendor unique string (i.e. “acme:” in the example) is treated as a namespace, and should always come first. The rest of the string should differentiate between this specific vendors devices.  This allows multiple vendors making different products with the same product type string, such as “light switch”, and allows drivers to uniquely identify devices.
+
+
+### ACCESS_POINT_NODE_ID Attribute_
+
+This attribute contains the short ID of a Control4 router best ZigBee Access Point. An end device within the Control4 system should query this attribute from its parent when joining for the first time, and when rejoining a parent, in order to determine the destination for its own messages. This is selected statistically based upon cost, failure rate, and other criteria, and reflects the destination the end device parent will to use for messages. End devices do not hear MTORRs, and therefore cannot determine the best access points to use. They should therefore utilize the parent Control4 router access point as their own destination as well.
+
+Note in some cases, an end device will join directly to a ZigBee Access Point as a parent. The ZAP responds to the same queries as Control4 router, and will still notify the end device of the proper access point to use (i.e. itself). 
+This attribute may be set by parent Control4 router or ZAP if the network topology requires it.  If an end device has this attribute set by a parent, it should not override the new setting unless it needs to change due to a normal network management event (i.e. such as a rejoin attempt).  
+
+Note: when setting the access point information within the stack, the long ID should be set prior to setting the short ID. In some stacks, performing the opposite (setting the short ID first, and then the long ID) will invalidate the short ID with 0xFFFD. 
+
+
+### ACCESS_POINT_LONG_ID Attribute_
+
+This attribute contains the EUI64 long ID of a Control4 router primary ZigBee Access Point.  An end device within the Control4 system should always query this attribute from its parent in order to determine the destination for its own messages. It is recommended this occurs whenever a parent for the end device may change, such as during a new join, or a rejoin. It can also be done periodically to refresh the end device access point in case the parent ZAP has changed. If periodically polled, this should not occur any faster than the default MTORR_PERIOD of 300 seconds. _
+
+This attribute may be set by a parent to an end device if the network topology requires it.  If an end device has this attribute set by a parent, it should not override the new setting unless it needs to change due to a normal network management event (i.e. such as a rejoin attempt).
+
+Note: when setting the access point information within the stack, the long ID should be set prior to setting the short ID. In some stacks, performing the opposite (setting the short ID first, and then the long ID) will invalidate the short ID with 0xFFFD. 
+
+
+### ACCESS_POINT_COST Attribute_ 
+This attribute contains the cost of a reaching a ZigBee Access Point.  Parent devices track multiple Access Points and select them partially based upon cost. Since end devices only track a single Access Point, they have less use for this parameter, but can query it none-the-less for diagnostic purposes.
+
+
+### MESH_CHANNEL_ Attribute
+
+The MESH_CHANNEL attribute indicates the ZigBee channel that the node is operating on, and is reported to Access Points to make sure it matches.  It is expected this would be the same channel a Control4 ZAP is using, but this isn’t always the case. Depending on hardware design, it is possible for a node to “hear” and join a ZigBee network on a “ghosted” channel. The ZigBee protocol itself does nothing to prevent this. In these cases, the node may appear to function, but encounter significantly poor radio performance. To prevent this, Control4 Controllers actively ensure all the nodes in a mesh are on a correct channel. A Control4 Controller will set this attribute on nodes if it is found to be different than the channel the Controller is expecting. If a node receives a request to set this attribute, it should honor this request and change its ZigBee stack channel to match the request._
+
+
+### AVG_RSSI Attribute_
+
+This value can be used to report the RSSI value of packets received by an end device from a parent. Usually a running average is maintained on each incoming packet. The values can help when diagnosing systems with sparse or weak links between nodes. 
+
+
+### AVG_LQI Attribute_
+
+This value can be used to report the LQI value of packets received by an end device from a parent. Usually a running average is maintained on each incoming packet. The values can help when diagnosing systems with sparse or weak links between nodes.
+
+
+### BATTERY_LEVEL Attribute_
+
+This value can be used to report the battery level of a battery powered end device. The value is reported as a percentage, from 0 to 100%. The value can be ignored if the end device is not battery powered. It will help the system passively track battery status on nodes, and can be used for diagnostics purposes as well. 
+
+
+### RADIO_4_BARS Attribute
+
+This attribute provides a pseudo “4-bar” radio signal quality indicator for each node in the network. This can be used to help diagnose communications problems to devices, and is displayed in the installer UI tools such as Composer. The value is typically based upon a combination of LQI and RSSI. LQI indicates link quality, and RSSI indicates receive signal strength. RSSI is a less reliable indicator of radio performance than LQI, and the 4 bar value is typically weighted accordingly. 
+
+The algorithm for determining the strength of bars is primarily based upon average LQI values for incoming packets, and is only adjusted downward in case of exceptionally poor RSSI. The values used by Control4 devices are as follows:
+
+| LQI | 4 Bar Signal Strength | 
+| --- | --- | 
+| 235-255 | 4 |
+| 215-234 | 3 |
+| 195-214 | 2 |
+| 175-194 | 1 |
+| Below 175 | 0 |
+
+If average RSSI value is below -70dB, then the 4 bar signal strength is adjusted downward by one (i.e. an average LQI of 215 with an average RSSI value of -80dB would result in a signal strength of 3-1=2).
+
+This can be dependent on hardware design, since an LNA/PA can boost transport and receive performance. It is also only a unidirectional value, since only the receive from a neighbor is being evaluated. These values are only shown as an example for reference, and vendor hardware can estimate this using some other criteria if desired. 
+
+
+## Commands Sent and Received
+
+The table below lists cluster specific commands are sent or received by the server.
+
+| Command Identifier Field Value | Description | Mandatory/Optional |
+| --- | --- | --- | 
+| 0x00 | IMMEDIATE_ANNOUNCE_COMMAND_ID | O |
+
+
+### IMMEDIATE_ANNOUNCE_COMMAND_ID_
+
+This command can be sent by Control4 Controller (received by a node) to request that an Announcement be sent immediately. An Announcement is simply the predetermined set of mandatory attributes defined by this document (see section 7 for details). There may be more than one “Announcement” required to report all of the required information (in this case send them back to back). 
+
+The request for an immediate announce may be unicast, or it may be broadcast to the entire network. In the case of a broadcast, the list of nodes in the payload of the message must be used as a filter for the target nodes being requested to send in an Announcement.  This target node list is a little endian list of short ids.
+
+This command is usually used to correct communications problems where a Control4 Controller does not have enough information about a particular node. In these cases, it is typically sent broadcast in order to generate a new Announcement back to itself. In that case, the target node id list must be used to limit the number of responders to those the Control4 Controller is interested in. 
+
 
