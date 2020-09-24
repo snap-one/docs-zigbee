@@ -347,3 +347,68 @@ AttributeValue 0x1234
 Would be sent over the air in little endian byte order as 0100213412
 
 
+### Additional End Device Attributes
+
+In the case of Control4 networks, Control4 routers track a best access point based upon many-to-one-route-requests being received by the Control4 parent routers. Since end devices do not hear these messages, they are required to ask their parent for the relevant access point information to learn where to send messages. 
+
+When a Control4 end node joins a router, it will query the following information from the router via read attributes requests using the following parameters. 
+
+ZCL message type: read attributes request
+ProfileId: 0xc25d
+ClusterId: 0x0001
+Endpoint: anything but 0x00 or 0xff
+
+Control4 routers respond by providing the following read attributes responses. The end device can then use this information for the best Control4 access point. For example, the following values communicate to an end device that 0x0000 is the preferred access point for this end device.
+
+AttributeId: 0x0008
+AttributeType: ZCL_INT16U_ATTRIBUTE_TYPE
+AttributeValue: 0x0000
+
+AttributeId: 0x0009
+AttributeType: ZCL_IEEE_ADDRESS_ATTRIBUTE_TYPE
+AttributeValue:  EUI64
+
+AttributeId: 0x000a
+AttributeType: ZCL_INT8U_ATTRIBUTE_TYPE
+AttributeValue: 0x00
+
+Control4 systems support spanning a mesh across multiple access points through IP, allowing devices out of radio range of each other to communicate. The way an end device discovers which access point is within range is by querying the parent Control4 router or ZAP for the best access point within range. It is therefore important that end devices adhere to the access point information provided by the router/ZAP using these attributes. Simply sending to a predetermined coordinator (0x0000), for example, is not guaranteed to work in some network topologies, such as a pool house out of radio range of a main house. 
+
+
+## Control4 Network Practices
+
+The preceding text describes the over the air protocol used for the Control4 Network Cluster.  There is also a set of behaviors that it is strongly recommended that a device implement in order act consistently on a Control4 Network.  Many of these behaviors are described in the ZigBee Home Automation Profile document.
+
+_Scanning and Joining_ - A Control4 Network may use ZigBee channels 11 – 25 in a released image.  Channel 26 is avoided in release images in order to not violate FCC rules.  When it is desired that a device be added to a Control4 system, the installer typically presses a button on the device four times.  This is called “identifying the device”. This causes the device to scan all 15 channels, looking for a PAN to join.  When a PAN that will allow joining is detected, the device joins the network and receives the network and a link key. There is a possibility that a device may miss a beacon with permit joining true. This is especially true when devices are first being joined to a new network, since devices across multiple PANs can flood a requesting device with beacon responses from other PANs that are not permitting joining. For this reason, it is recommended to try multiple beacon requests and beacon responses on each given channel, to ensure that the beacons from networks that not permitting joining will be disregarded and the beacon that is permitting joining will be detected.  
+
+Control4 controllers handle the network key uniquely. During association, Control4 controllers will alternately send the key encrypted with the pre-configured link key, and then in the clear. This is designed to allow legacy devices to join that do not implement encrypted network keys as subsequently required by various ZigBee profiles. The joining device must be configured to either allow both options (e.g. not setting the EMBER_REQUIRE_ENCRYPTED_KEY option for EmberInitialSecurityState on SiliconLabs stack, or equivalent), or implementing the joining state machine such that it retries when a key is received in the clear so that the subsequent encrypted key will be used.  
+
+After a device successfully joins a network it is essential that it report its entire Control4 network attributes set to ZServer via one or more broadcast ZCL Attribute Report messages.  This “identifies” the device to the controller and pairs the device with the appropriate Control4 system driver.
+
+If a device is already joined to a network, pressing the identify button four times (or what ever user interaction “identifies” the device) should cause the device to broadcast its Control4 network cluster attribute report again. This can be used to generate an online status event through the system. 
+
+_Leaving a network_ – All Control4 ZigBee devices have a button sequence that causes them to leave the Control4 network.  The device should send out a ZDO device leave broadcast as it leaves.  This functionality is essential so that a device can be joined to another network.  Since Control systems are installed by certified installers, the button sequence should not allow for accidental triggering in normal device use.  Additionally, all devices should adhere to the ZDO leave request and implement the ZDO leave handler in firmware such that they can be told to leave the network over the air if the device is “disconnected” using an installation tool, or found to not match the driver it is being “identified” against. 
+
+_Restoring to factory defaults_ – All Control4 ZigBee devices have a button sequence that causes it to restore all of the application settings to factory defaults.  This is usually (but not necessarily) the same button sequence as the leaving a network button sequence so both actions are completed at once.
+
+_APS frame options_ – Devices must set the EmberApsFrame option EMBER_APS_OPTION_SOURCE_EUI64 for outgoing packets whenever possible. This allows the receiving controller to associate an incoming frame with an appropriate long and short ID of the source. Optionally, the outgoing packet should also use the EMBER_APS_OPTION_DESTINATION_EUI64 option. Be aware that these options come at the expense of payload size.
+
+_End Device versus Router_ – Control4 routers implement specific behaviors to ensure the network health is maintained, and all devices can communicate properly. This behavior is not described within this document, and may change in the future to improve network performance, scaling, route stability, etc. For this reason, Control4 only supports end devices for non-Control4 manufactured devices, as described within this document. Note that non-polling end device configurations benefit from the same communications performance as a router, with the added benefit of more application space due to a smaller stack size. 
+
+_Lost Node Behavior for End Devices_ – If an end node of any type cannot contact its parent for a number of polls, it should attempt to find a new parent on the current channel through a rejoin. If that fails, it should fallback to all other channels.  The sequence should be tried using the existing network key first (secure rejoin), and then fall back to retrieving a new network key if necessary. 
+
+The period of time to wait before attempting to rejoin starts at no less than 10 seconds and grow on every unsuccessful rejoin attempt, doubling each time until the period is equal to 1 hour is reached between rejoin attempts. This doubling algorithm is intended to prevent large number of beacons storming a network of 50+ nodes, a conservative approach is adopted as required by the product.
+
+If the node cannot find the network, it should wait for a period of time and try again.  During this wait period, the node should stay on the last known valid network channel in a state that is ready to receive messages. If any are received, the node should clear the lost state and resume normal operation until the next lost threshold is triggered. 
+
+_End Node Parent Polling Time_ – Polling end devices must poll their parent at least every 7.68 seconds according to the specification and configuration. This is known as the EMBER_INDIRECT_TRANSMISSION_TIMEOUT. Control4 recommends this actually be around every 7 seconds to ensure messaging is successful. A node may choose to poll its parent less frequently, but any client that sends a message to that device will experience datagram delivery failures if messages are sent while the node is asleep for more than 7.68 seconds. Some implementations may sleep longer intentionally to save battery life. In this case, it is often beneficial to implement an awake signal to the driver to negotiate when messages may be sent to the device, and when they should not. Be aware that if the device fails to poll for too long, it will be removed from the parent child table and be forced to rejoin the network as described above. Currently the child table timeout is set for over 4 hours, but this may be reduced to as low as 10-15 minutes in the future Control4 systems to avoid the long timeout on children that may have left the parent without its knowledge. 
+
+Non-polling end devices do not need to poll the parent to retrieve messages, and therefore can poll much more infrequently. In this case, they are polling simply to stay in the parent child table, or to ensure the parent is there prior to triggering a lost/rejoin behavior. 
+
+_Control4 Network Attribute Sets_ – ZServer will occasionally set some of the writeable Control4 Network Attributes on a node via broadcast or unicast.  It does so in order to adjust attributes such as the ANNOUNCE_WINDOW appropriately for the size of the network.  A node on a Control4 network should have message handlers to handle the setting of these attributes.  Note that the list of attributes to be written in the ZCL write attributes command may come in any order and be of any length that will fit in a ZigBee packet.  
+
+_Control4 Network Attribute Reporting_ – A node on a Control4 Network should report its network attributes periodically using a “ZCL Report Attributes” command.  An end device should send in a report once every ANNOUNCE_WINDOW. The report should be sent at a random time ranging from 15 seconds to the ANNOUNCE_WINDOW seconds, and sent unicast to the nodes best access point.  The random back off ensures that all the device on the network will not send a message at the same time, and the report ensures that the ZAP will hear a ZigBee route record from each node and that ZServer is kept up to date on the devices network attribute status.  Since all the attributes may not fit into a single message, it is not necessary to send all the attributes every time, but they should be sent in alternating sets.
+
+_End Device Attribute Reporting Behavior_ – End device have to find a balance between battery life and performance.  In order to maximize battery life, they may send Control4 Network Attribute Reports at their own desired frequency. This however creates a problem when ZServer has rebooted and has yet to hear a Control4 Network Attribute report from the end device.  ZServer can not send any source routed data to the end device until it hears a route record from the end device’s parent, and can not do a very good job at sending a source routed datagram until it knows the device type of the end device.  This condition could have the effect of an end device being “offline” to ZServer after a ZServer reboot until the end device sends a regularly scheduled Control4 Network Cluster Attribute Report message.  To alleviate this problem, both ZServer and the end device may choose to implement some specific behaviors.  If ZServer hears a datagram from a node that it has not heard a Control4 Network Cluster attribute report,  it may send the command to request an IMMEDIATE_ANNNOUNCE on the node via source routing (if a route record was heard), or via AODV routing. This should cause the end device to immediately send an attribute report message. Note that this technique will not always be effective if the end device goes to sleep, and does not poll its parent for a more than 7.68 seconds, as it may not hear the IMMEDIATE_ANNOUNCE command.  Alternatively, if the end device sends a message to ZServer, expects to hear a reply at the APS level (from a Control4 driver), but fails to do so, then that should be a good indicator that ZServer is unable to send a message back due to routing issues and it may choose to send a Control4 Network Cluster attribute report to get “online” quickly.  
+
+
