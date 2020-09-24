@@ -255,41 +255,54 @@ Validation for offset EVM requires special hardware, test equipment, and environ
 The failure mode introduced by high offset EVM can be difficult to diagnose. The typical failure mode will be excessive retries at the 802.15.4 MAC layer to deliver messages and obtain associated MAC acks. This is usually unidirectional in nature, since only one side is having a transmit problem, and it can appear that the receiver is having a problem. It is not possible to directly see high offset EVM in a sniffer, but there are some indicators. Lower than expected LQI and cost in link status exchanges is one key indicator. Both transmit and receive LQI are reflected in link status exchange cost. The indicator would not be from the node having transmit problems, but instead from a neighboring node reflecting how well it is receiving messages from this device. Another indicator is that a sniffer may not "hear" the transmitting node, even in close proximity. This combined with excessive MAC layer retries to a particular node (indicating the MAC acks are also not being received by the transmitting node) can be an indicator of high offset EVM. Control4 has found some sniffers are able to receive packets with higher offset EVM than others. Sniffing from two independent sniffers, one based upon AVR/2420 architecture for example, and one based upon Em250/35x, can provide more evidence. The AVR sniffer will decode the packets whereas the Em250/35x sniffer will not. Note that this is not sufficient to identify high offset EVM. Other factors, like interrupt handling implementation in firmware, could also produce a failure to MAC ack incoming messages. This is why an EVM analysis is required to measure offset EVM value of a particular device. Also be aware that other changes can introduce (or resolve) EVM issues over the life of a product. For instance, a minor change in hardware (e.g. changing a capacitor), extreme temperature changes triggering radio recalibration, and transmit power settings clipping the PA of a transmitter have all been found to generate offset EVM in excess of 15%. Regular testing and diligence on the part of hardware manufacturers and firmware developers is important to ensure EVM is within specifications.
 
 
-Support for Distributed Trust Center mode
+## Support for Distributed Trust Center mode
+
 The entity on a ZigBee network that handles security and key exchanges is called a Trust Center. There are two method of handling security: Centralized Trust Center (CTC) and Distribute Trust Center(DTC). The HA standard method prior to ZigBee 3.0 is CTC. This mode requires devices authenticate and receive keys from a central authority called the coordinator. If the central authority fails, the key information must be transferred to a new centralized trust center. It also requires that there is a coordinator on the network. The concept of coordinator can introduce some negative use cases. Nodes track coordinators differently that every other device in the network and cannot resolve conflicts with multiple coordinators automatically as they can with other nodes (e.g. node id conflict resolution).
 Control4 uses DTC mode for all routers. This mode is also now part of the specification for ZigBee 3.0 devices. This allows association to any router within the system, and can remove the concept of coordinator. This has a couple of advantages, in that it eliminates a central point of failure for security management, and it makes address conflict resolution feasible in all use cases. It also allows any device to form a secure network. 
-Validation:
-1.	Using a sniffer, confirm that the apsTrustCenterAddress is all 0xFFFFFFFFFFFFFFFF (e.g. Transport Key (NWK)→ZigBee Application Support Command→Source Address = 0xFFFFFFFFFFFFFFFF), indicating a Distributed Security network per docs-05-3474-21-0csg-zigbee-specification.pdf section . If the apsTrustCenterAddress is any other value, it indicates a Centralized Security network.
 
- 
-Uses Control4 compatible stack configuration and SAS attribute set
+Validation:
+
+1. Using a sniffer, confirm that the apsTrustCenterAddress is all 0xFFFFFFFFFFFFFFFF (e.g. Transport Key (NWK)→ZigBee Application Support Command→Source Address = 0xFFFFFFFFFFFFFFFF), indicating a Distributed Security network per docs-05-3474-21-0csg-zigbee-specification.pdf section . If the apsTrustCenterAddress is any other value, it indicates a Centralized Security network.
+
+	 
+## Uses Control4 compatible stack configuration and SAS attribute set
+
 The following is a stack configuration, and therefore part of the compiled firmware image. These values are must be confirmed with the firmware developer for each vendor specific product. Hops, poll interval, and child table count apply only to routing devices. 
 
 Validation:
+
 Confirm with the vendor the device under test is configured with the following SAS and attribute set.
-1.	Stack profile = 2 (Pro)
-2.	Protocol version = 2 (rev 17 (2007) or later)
-3.	Security level = 5 (secure)
-4.	Maximum hops = 10 (Need test method)
-5.	End-device poll timeout and timeout shift of \>= 320 seconds (Need test method)
-1.	end device poll timeout = 255
-2.	end device poll timeout shift \>= 6
-6.	End-device child count \> 6 
-7.	Child table timeout
 
-Implements access point tracking algorithm for 3 or more access points
+1. Stack profile = 2 (Pro)
+2. Protocol version = 2 (rev 17 (2007) or later)
+3. Security level = 5 (secure)
+4. Maximum hops = 10 **(Need test method)**
+5. End-device poll timeout and timeout shift of \>= 320 seconds **(Need test method)**
+
+- end device poll timeout = 255
+- end device poll timeout shift \>= 6
+
+6. End-device child count \> 6 
+7. Child table timeout
+
+
+## Implements access point tracking algorithm for 3 or more access points
+
 For routing devices to track multiple ZigBee access points, they must implement a Control4 specific algorithm. Zserver is designed to round robin through Zaps, sending an MTORR from each Zap in sequential fashion. It is expected a device receiving these messages will prioritize Zaps based upon path cost to the sender of the MTORR (also called the concentrator in Many-To-One routing). The "best" access point will be the access point with the lowest path cost. Path cost is proportionality to intermediate hop cost of the route traversal of the MTORR message. Poor cost can be simulated by introducing a poor hop, such as through transmitter attenuation. As attenuation increases, path cost will also increase. As path cost may change over time, it is expected that the routing device will automatically transition to a new access point if it becomes a better destination. It is also expected that the device under test will not simply follow the last access point to send an MTORR. This would indicate a firmware implementation that does not track a best access point. Zserver selects source routes based upon the route record of any message received from a device that is not an announcement. This route should be the route for the "best" access point (whereas the announcement route is simply the route to the last access point to send an MTORR). APS ack routes apply, so simply sending a ping to the device can trigger an APS route back to a "best" access point. The best indicator, however, is an asynchronous message (e.g. a trap), since this must follow a path defined by an address table entry on the device under test.
-Validation:
-1.	Setup a mesh network with 3 Zaps and the routing device under test.
-2.	Allow the mesh to proceed through one cycle of MTORR's being sent from each Zap.
-3.	Send an MTORR out each Zap under normal conditions, with roughly equal path cost. 
-4.	Find the Zap currently being used as the best access point for the device under test. Ensure the device under test selects one, and uses this access point for asynchronous messages after receiving MTORR's from other access points. On a backchannel device, query the device. On a device with no backchannel, send asynchronous unicast (e.g. a trap) from the device by generating an event. 
-5.	Attenuate the signal on 2 of the 3 Zaps (e.g. remove the antennas).
-6.	Allow the round robin interval to proceed across all Zaps (configurable in zserver.conf, default 15 minutes for 3 Zaps).
-7.	Find the Zap currently being used as the best access point for the device under test. On a backchannel device, query the device. On a device with no backchannel, send an asynchronous unicast (e.g. a trap) from the device by generating an event. This should match the Zap with a normal signal level (e.g the one with an antenna)
-8.	Repeat steps 3-5 with the other Zaps. Ensure the device under test best access point is following the Zap that has normal transmit capability. 
 
-ZigBee Certification Test Houses
+Validation:
+
+1. Setup a mesh network with 3 Zaps and the routing device under test.
+2. Allow the mesh to proceed through one cycle of MTORR's being sent from each Zap.
+3. Send an MTORR out each Zap under normal conditions, with roughly equal path cost. 
+4. Find the Zap currently being used as the best access point for the device under test. Ensure the device under test selects one, and uses this access point for asynchronous messages after receiving MTORR's from other access points. On a backchannel device, query the device. On a device with no backchannel, send asynchronous unicast (e.g. a trap) from the device by generating an event. 
+5. Attenuate the signal on 2 of the 3 Zaps (e.g. remove the antennas).
+6. Allow the round robin interval to proceed across all Zaps (configurable in zserver.conf, default 15 minutes for 3 Zaps).
+7. Find the Zap currently being used as the best access point for the device under test. On a backchannel device, query the device. On a device with no backchannel, send an asynchronous unicast (e.g. a trap) from the device by generating an event. This should match the Zap with a normal signal level (e.g the one with an antenna)
+8. Repeat steps 3-5 with the other Zaps. Ensure the device under test best access point is following the Zap that has normal transmit capability. 
+
+
+## ZigBee Certification Test Houses
 
 United States
 National Technical Systems Inc.
@@ -305,7 +318,8 @@ Mr. Henk Veldhuis
 ph: +32 427 310863 
 e: henk.veldhuis@de.tuv.com
 
-Certification Contact for Control4
+
+## Certification Contact for Control4
 
 Control4
 Contact:
