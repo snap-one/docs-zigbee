@@ -107,22 +107,22 @@ The currently defined attributes for this cluster are listed in Table 3. It may 
 | 0x000C | MESH\_CHANNEL | Unsigned 8-bit integer | 0x0b – 0x19 | Read/Write | 0x0b | M | M |
 | 0x0013 | AVG\_RSSI | Signed 8-bit integer | -128-0 | Read Only | 0 |O | O |
 | 0x0014 | AVG\_LQI | Unsigned 8-bit integer | 0-0xff | Read Only | 0 |	O | O |
-| 0x0015 | BATTERY\_LEVEL | Signed 8-bit integer | 0-100 (percent) | Read Only | 0 |	O | O |
+| 0x0015 | BATTERY\_LEVEL | Signed 8-bit integer | 0-100 (percent) | Read Only | 0 | O | O |
 | 0x0016 | RADIO\_4\_BARS | Unsigned 8-bit integer | 0-4 | Read Only | 0 | O | O |
 
 
 ### DEVICE\_TYPE Attribute\_
 
-The DEVICE\_TYPE attribute indicates what type of ZigBee Device the device is configured to use, i.e. non-polling end device, polling (sleepy) end device. Partner devices are only supported in an end device configuration (polling END\_DEVICE, or non-polling SLEEPY\_END\_DEVICE). Note that the non-polling END\_DEVICE configuration allow the same communications performance as a router device, with the benefit of a smaller stack size. Control4 routers implement a number of features not described by this document, and typically installation scenarios provide more than enough surround routers, so if the planned configuration is to use a router with a non-Control4 network, it should instead be configured as END\_DEVICE when used withing a Control4 network. 
+The DEVICE\_TYPE attribute indicates what type of ZigBee Device the device is configured to use, i.e. non-polling end device, polling (sleepy) end device. Partner devices are only supported in an end device configuration (polling END\_DEVICE, or non-polling SLEEPY\_END\_DEVICE). Note that the non-polling END\_DEVICE configuration allow the same communications performance as a router device, with the benefit of a smaller stack size. Control4 routers implement a number of features not described by this document, and typically installation scenarios provide more than enough surround routers, so if the planned configuration is to use a router with a non-Control4 network, it should instead be configured as END\_DEVICE when used within a Control4 network. 
 
 The possible types of devices are as follows (others are reserved):
 
 | Name | Description | Value | 
 | --- | --- | --- |
-| END\_DEVICE | Communicates only with parent, will not route messages.  Parent does not impede or cache messages destined for this node. Receives messages as quickly as a router. Node only has to poll parent occasionally to make sure it still has a parent and to remain in the parents child table. | 0x03 |\_
+| END\_DEVICE | Communicates only with parent, will not route messages.  Parent does not impede or cache messages destined for this node. Receives messages as quickly as a router. Node only has to poll parent occasionally to make sure it still has a parent and to remain in the parents child table. | 0x03 |
 | SLEEPY\_END\_DEVICE | End device that can turn off radio, must poll parent for messages. | 0x04 |
 
-### ANNOUCE\_WINDOW Attribute\_
+### ANNOUNCE\_WINDOW Attribute\_
 
 In a Control4 network, the system controllers periodically send out ZigBee Many-To-One Route Request (MTORR) broadcasts.  A system controller that has a ZigBee radio, and is able to send an MTORR, is called a Control4 ZigBee Access Point (ZAP). This broadcast establishes routes back to the ZAP from each Control4 router within the network. Note that end devices always send route records to the destination node, and therefore do not utilize the MTORR itself. 
 
