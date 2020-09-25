@@ -102,7 +102,7 @@ The currently defined attributes for this cluster are listed in Table 3. It may 
 | 0x0006 | BOOT\_COUNT | Unsigned 16-bit integer | 0-0xffff | Read only | 0 | M | M |
 | 0x0007 | PRODUCT\_STRING | Char String | - | Read only | Null String | M | M |
 | 0x0008 | ACCESS\_POINT\_NODE\_ID | Unsigned | 16-bit integer | 0-0xffff | Read/Write | 0xffff | M |O |
-| 0x0009 | ACCESS\_POINT\_LONG\_ID | IEEE Address | - | Read/Write |	0xffffffffffffffff | M | O |
+| 0x0009 | ACCESS\_POINT\_LONG\_ID | IEEE Address | - | Read/Write | 0xffffffffffffffff | M | O |
 | 0x000A | ACCESS\_POINT\_COST | Unsigned 8-bit integer | 0-0xff | Read/Write | 0xff | M | O |
 | 0x000C | MESH\_CHANNEL | Unsigned 8-bit integer | 0x0b – 0x19 | Read/Write | 0x0b | M | M |
 | 0x0013 | AVG\_RSSI | Signed 8-bit integer | -128-0 | Read Only | 0 |O | O |
