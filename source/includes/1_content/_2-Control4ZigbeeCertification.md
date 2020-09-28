@@ -34,7 +34,7 @@ The following areas of functionality will be tested based upon device type:
 10. Implemented with a General Availability (GA) stack release. 
 11. Uses Control4 compatible stack configuration and SAS attribute set.
 12. Error Vector Magnitude less than 15%.
-		 
+			 
 
 ## Router
 
@@ -264,7 +264,7 @@ Validation:
 
 1. Using a sniffer, confirm that the apsTrustCenterAddress is all 0xFFFFFFFFFFFFFFFF (e.g. Transport Key (NWK)→ZigBee Application Support Command→Source Address = 0xFFFFFFFFFFFFFFFF), indicating a Distributed Security network per docs-05-3474-21-0csg-zigbee-specification.pdf section . If the apsTrustCenterAddress is any other value, it indicates a Centralized Security network.
 
-		 
+			 
 ## Uses Control4 compatible stack configuration and SAS attribute set
 
 The following is a stack configuration, and therefore part of the compiled firmware image. These values are must be confirmed with the firmware developer for each vendor specific product. Hops, poll interval, and child table count apply only to routing devices. 
@@ -304,29 +304,43 @@ Validation:
 
 ## ZigBee Certification Test Houses
 
-United States
-National Technical Systems Inc.
+**United States: National Technical Systems Inc.**
+
 Contact:
+
 Mr. Raymond Chung
+
 ph: +1 (310) 641-7700 ext: 1056
+
 e: raymond.chung@nts.com
 
-Europe
-TÜV Rheinland Group
+
+**Europe: TÜV Rheinland Group**
+
 Contact:
+
 Mr. Henk Veldhuis
+
 ph: +32 427 310863 
+
 e: henk.veldhuis@de.tuv.com
+
 
 
 ## Certification Contact for Control4
 
-Control4
+**Control4**
+
 Contact:
+
 Quyen Dungan
+
 11734 S. Election Road
+
 Draper, UT 84020-6432
+
 ph: +1 (801)-523-4223
+
 e: qdungan@control4.com
 
 
