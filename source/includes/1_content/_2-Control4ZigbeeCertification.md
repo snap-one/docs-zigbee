@@ -124,7 +124,7 @@ Join DUT to the network. Generate noise in network such that DUT attempts  to re
 Test device under test always perform secure join. We can verify this through sniffer trace or need same additional logging traces to be added. For logging TRAN-2645 is created.
 
 
-**Test case 3:**  
+**Test case 3:**
 Test DUT allows only secure joining: Add DUT in network and try to add another unsecured device to the network. To simulate this initiate "allow join" from ZMAN, turn off the controller, click on unsecured device so that it initiates join and DUT should reject this unsecured join. Currently we are not having any ZigBee device that initiate unsecured join so require modification in template, TRAN-2645 to track this modification. 
 
 
@@ -324,6 +324,8 @@ Mr. Henk Veldhuis
 ph: +32 427 310863 
 
 e: henk.veldhuis@de.tuv.com
+
+
 
 
 
