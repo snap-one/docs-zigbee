@@ -111,7 +111,7 @@ The currently defined attributes for this cluster are listed in Table 3. It may 
 | 0x0016 | RADIO\_4\_BARS | Unsigned 8-bit integer | 0-4 | Read Only | 0 | O | O |
 
 
-### DEVICE\_TYPE Attribute\_
+### DEVICE\_TYPE Attribute
 
 The DEVICE\_TYPE attribute indicates what type of ZigBee Device the device is configured to use, i.e. non-polling end device, polling (sleepy) end device. Partner devices are only supported in an end device configuration (polling END\_DEVICE, or non-polling SLEEPY\_END\_DEVICE). Note that the non-polling END\_DEVICE configuration allow the same communications performance as a router device, with the benefit of a smaller stack size. Control4 routers implement a number of features not described by this document, and typically installation scenarios provide more than enough surround routers, so if the planned configuration is to use a router with a non-Control4 network, it should instead be configured as END\_DEVICE when used within a Control4 network. 
 
@@ -122,7 +122,7 @@ The possible types of devices are as follows (others are reserved):
 | END\_DEVICE | Communicates only with parent, will not route messages.  Parent does not impede or cache messages destined for this node. Receives messages as quickly as a router. Node only has to poll parent occasionally to make sure it still has a parent and to remain in the parents child table. | 0x03 |
 | SLEEPY\_END\_DEVICE | End device that can turn off radio, must poll parent for messages. | 0x04 |
 
-### ANNOUNCE\_WINDOW Attribute\_
+### ANNOUNCE\_WINDOW Attribute
 
 In a Control4 network, the system controllers periodically send out ZigBee Many-To-One Route Request (MTORR) broadcasts.  A system controller that has a ZigBee radio, and is able to send an MTORR, is called a Control4 ZigBee Access Point (ZAP). This broadcast establishes routes back to the ZAP from each Control4 router within the network. Note that end devices always send route records to the destination node, and therefore do not utilize the MTORR itself. 
 
@@ -132,23 +132,25 @@ Since all of the Control4 Network Cluster attributes cannot fit in a typical Zig
 
 A Control4 automation system may contain more than one ZAP.  Control4 routers gather statistics about the best access points within the system, and provide this information through an attribute to end devices interested in discovery the best access point to send messages to. An end device is free to send events to any ZAP in the network, but since Control4 routers gather statistics about the best access points within the system, it is recommended that end devices query the access point information from their parent Control4 router whenever they join or rejoin the network.
  
-Control4 routers can be queried by end devices, and asked for the following attributes: ACCESS\_POINT\_NODE\_ID, ACCESS\_POINT\_LONG\_ID, and ACCESS\_POINT\_COST. They can also periodically poll the parent router for updated access point information, though this should not be performed more often that the MTORR\_PERIOD default period of 300 seconds (5 minutes) to preserve network bandwidth. In the future, they may also expect to have this information changed at any time from a parent router. \_
+Control4 routers can be queried by end devices, and asked for the following attributes: ACCESS\_POINT\_NODE\_ID, ACCESS\_POINT\_LONG\_ID, and ACCESS\_POINT\_COST. 
+
+They can also periodically poll the parent router for updated access point information, though this should not be performed more often that the MTORR\_PERIOD default period of 300 seconds (5 minutes) to preserve network bandwidth. In the future, they may also expect to have this information changed at any time from a parent router. \_
 
 In a Control4 system, a router would typically not hear another MTORR until after a ANNOUNCE\_WINDOW time period has passed.  Exceptions are made by a ZAP when it deems routes are in need of repair. End devices never hear MTORR’s and instead automatically send in route records every time the send a message to a destination. 
 
 
-### MTORR\_PERIOD Attribute\_
+### MTORR\_PERIOD Attribute
 
 The MTORR\_PERIOD attribute indicates how often a ZAP will send an MTORR, and therefore the frequency a parent router could be expected to change to a new access point.  ZServer will typically set this to 300 seconds by default, but may use a slower value to preserve network bandwidth. The value is also multiplied by the number of ZAPs within the system (i.e. 2 zaps would produce an MTORR by each zap every 600 seconds). An end device may query this value, and use it to determine how often to poll a parent for new access point information. 300 seconds is always a safe value as a default. An end device will not benefit from polling a parent any faster than this value, since the routes will not change any faster than this. \_
 
 
-### FIRMWARE\_VERSION Attribute\_
+### FIRMWARE\_VERSION Attribute
 
 This is an arbitrary string that indicates firmware version.  The format of this string is optional. Control4 typically implements firmware strings as follows: “01.02.03” where 01 is the major version (all values in hex), 02 is the minor version, and 03 is the build version. 
 Note that the string is not limited to a particular number of characters or format, but it is recommended that length be limited for payload reasons. Excessive length of this string, or other variable length attributes, such as the product string, may result in failure on the part of the stack to be able to send the packet due to excessive length. 
 
 
-### REFLASH\_VERSION Attribute\_
+### REFLASH\_VERSION Attribute
 
 This attribute indicates the over the air reflash algorithm the device supports.  This field is reserved for Control4 devices and reflash mechanisms. Other vendors should always use the vendor specific option of 0xFF unless implicitly implementing a Control4 specific reflash protocol. A reflash API is provided within the DriverWorks SDK for updating vendor devices. This can be utilized by vendors reporting VENDOR\_SPECIFIC as their reflash profile. 
 
@@ -158,12 +160,12 @@ This attribute indicates the over the air reflash algorithm the device supports.
 | VENDOR\_SPECIFIC | Over the air reflash is handled between the device driver and the device. This is the DriverWorks SDK method for handling reflash within the driver | 0xFF |
 
 
-### BOOT\_COUNT Attribute\_
+### BOOT\_COUNT Attribute
 
 This attribute indicates how many times the device has rebooted. Typically, this is stored in NVS, incremented each time the device reboots, and only reset upon a factory reset procedure. It may be helpful to not roll this value at 0xFFFF, since this typically indicates a problem. This can be helpful in determining some hardware failure modes that may be causing a devices to reboot repeatedly. 
 
 
-### PRODUCT\_STRING Attribute\\
+### PRODUCT\_STRING Attribute
 
 This attribute is a string that uniquely describes the device. It must be unique to the device SKU, and match the DriverWorks driver “search type”.  It is the string that a Control4 Controller uses to match the device with the appropriate Control4 system driver.
 
@@ -178,7 +180,7 @@ Here would be an example of a third party product string:
 The vendor unique string (i.e. “acme:” in the example) is treated as a namespace, and should always come first. The rest of the string should differentiate between this specific vendors devices.  This allows multiple vendors making different products with the same product type string, such as “light switch”, and allows drivers to uniquely identify devices.
 
 
-### ACCESS\_POINT\_NODE\_ID Attribute\_
+### ACCESS\_POINT\_NODE\_ID Attribute
 
 This attribute contains the short ID of a Control4 router best ZigBee Access Point. An end device within the Control4 system should query this attribute from its parent when joining for the first time, and when rejoining a parent, in order to determine the destination for its own messages. This is selected statistically based upon cost, failure rate, and other criteria, and reflects the destination the end device parent will to use for messages. End devices do not hear MTORRs, and therefore cannot determine the best access points to use. They should therefore utilize the parent Control4 router access point as their own destination as well.
 
@@ -188,7 +190,7 @@ This attribute may be set by parent Control4 router or ZAP if the network topolo
 Note: when setting the access point information within the stack, the long ID should be set prior to setting the short ID. In some stacks, performing the opposite (setting the short ID first, and then the long ID) will invalidate the short ID with 0xFFFD. 
 
 
-### ACCESS\_POINT\_LONG\_ID Attribute\_
+### ACCESS\_POINT\_LONG\_ID Attribute
 
 This attribute contains the EUI64 long ID of a Control4 router primary ZigBee Access Point.  An end device within the Control4 system should always query this attribute from its parent in order to determine the destination for its own messages. It is recommended this occurs whenever a parent for the end device may change, such as during a new join, or a rejoin. It can also be done periodically to refresh the end device access point in case the parent ZAP has changed. If periodically polled, this should not occur any faster than the default MTORR\_PERIOD of 300 seconds. 
 
@@ -292,59 +294,59 @@ In the case of a unicast Announcements, sending this message every 5-10 minutes 
 
 The “Announce” or “Identify” packets are sent using the following parameters:
 
-ZCL message type: report attributes (0x0a)
-ProfileId: 0xc25d
-ClusterId: 0x0001
-Endpoint: anything but 0x00 or 0xff
+`ZCL message type: report attributes (0x0a)`
+`ProfileId: 0xc25d`
+`ClusterId: 0x0001`
+`Endpoint: anything but 0x00 or 0xff`
 
 Here are the minimal ZCL attributes you’ll need to populate the “Announce” or “Identify” packet.
 
-AttributeId 0x0007
-AttributeType 0x42
-AttributeValue = length+"PROD\_STRING\_MAKE\_IT\_LESS\_THAN\_8\_CHARS"
+`AttributeId 0x0007
+``AttributeType 0x42
+``AttributeValue = length+"PROD\_STRING\_MAKE\_IT\_LESS\_THAN\_8\_CHARS"
+`  
+`AttributeId 0x0004`
+`AttributeType 0x42`
+`AttributeValue = length+"01.01.01"`
   
-AttributeId 0x0004
-AttributeType 0x42
-AttributeValue = length+"01.01.01"
+`AttributeId 0x0005`
+`AttributeType 0x20`
+`AttributeValue 0x03`
   
-AttributeId 0x0005
-AttributeType 0x20
-AttributeValue 0x03
+`AttributeId 0x0006`
+`AttributeType 0x21`
+`AttributeValue = 0x0130`
   
-AttributeId 0x0006
-AttributeType 0x21
-AttributeValue = 0x0130
+`AttributeId 0x0000`
+`AttributeType 0x20`
+`AttributeValue = 0x02`
   
-AttributeId 0x0000
-AttributeType 0x20
-AttributeValue = 0x02
+`AttributeId 0x0001`
+`AttributeType 0x21`
+`AttributeValue 0x0123`
   
-AttributeId 0x0001
-AttributeType 0x21
-AttributeValue 0x0123
+`AttributeId 0x0002`
+`AttributeType 0x21`
+`AttributeValue 0x012c`
   
-AttributeId 0x0002
-AttributeType 0x21  
-AttributeValue 0x012c
+`AttributeId 0x0003`
+`AttributeType 0x20`
+`AttributeValue 0x01`
   
-AttributeId 0x0003
-AttributeType 0x20
-AttributeValue 0x01
+`AttributeId 0x000b`
+`AttributeType 0x21`
+`AttributeValue 0x012c`
   
-AttributeId 0x000b
-AttributeType 0x21
-AttributeValue 0x012c
-  
-AttributeId 0x000c
-AttributeType 0x20
-AttributeValue 0x0b
+`AttributeId 0x000c`
+`AttributeType 0x20`
+`AttributeValue 0x0b`
   
   
 When sending these attributes, be sure to implement the correct endian-ness according to the ZCL specification (i.e. little endian byte order). Sending the incorrect byte order is the most common error encountered for “Identify” or “Announcement” packets.  As an example, an attribute record 0x0001 containing an unsigned 16-bit value (datatype 0x21) with a value of 0x1234:
 
-AttributeId 0x0001
-AttributeType 0x21
-AttributeValue 0x1234
+`AttributeId 0x0001`
+`AttributeType 0x21`
+`AttributeValue 0x1234`
 
 Would be sent over the air in little endian byte order as 0100213412
 
