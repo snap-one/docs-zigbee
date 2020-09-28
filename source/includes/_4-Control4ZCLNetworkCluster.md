@@ -150,12 +150,12 @@ Note that the string is not limited to a particular number of characters or form
 
 ### REFLASH\_VERSION Attribute\_
 
-This attribute indicates the over the air reflash algorithm the device supports.  This field is reserved for Control4 devices and reflash mechanisms. Other vendors should always use the vendor specific option of 0xFF unless implicitly implementing a Control4 specific reflash protocol. A reflash API is provided within the DriverWorks SDK for updating vendor devices. This can be utilized by vendors reporting VENDOR\_SPECIFIC as their reflash profile.   \_
+This attribute indicates the over the air reflash algorithm the device supports.  This field is reserved for Control4 devices and reflash mechanisms. Other vendors should always use the vendor specific option of 0xFF unless implicitly implementing a Control4 specific reflash protocol. A reflash API is provided within the DriverWorks SDK for updating vendor devices. This can be utilized by vendors reporting VENDOR\_SPECIFIC as their reflash profile. 
 
 
 | Reflash Version | Description | Value | 
 | --- | --- | --- |
-| VENDOR\_SPECIFIC | Over the air reflash is handled between the device driver and the device. This is the DriverWorks SDK method for handling reflash within the driver | 0xFF |\_
+| VENDOR\_SPECIFIC | Over the air reflash is handled between the device driver and the device. This is the DriverWorks SDK method for handling reflash within the driver | 0xFF |
 
 
 ### BOOT\_COUNT Attribute\_
@@ -163,7 +163,7 @@ This attribute indicates the over the air reflash algorithm the device supports.
 This attribute indicates how many times the device has rebooted. Typically, this is stored in NVS, incremented each time the device reboots, and only reset upon a factory reset procedure. It may be helpful to not roll this value at 0xFFFF, since this typically indicates a problem. This can be helpful in determining some hardware failure modes that may be causing a devices to reboot repeatedly. 
 
 
-### PRODUCT\_STRING Attribute\_
+### PRODUCT\_STRING Attribute\\
 
 This attribute is a string that uniquely describes the device. It must be unique to the device SKU, and match the DriverWorks driver “search type”.  It is the string that a Control4 Controller uses to match the device with the appropriate Control4 system driver.
 
@@ -190,14 +190,14 @@ Note: when setting the access point information within the stack, the long ID sh
 
 ### ACCESS\_POINT\_LONG\_ID Attribute\_
 
-This attribute contains the EUI64 long ID of a Control4 router primary ZigBee Access Point.  An end device within the Control4 system should always query this attribute from its parent in order to determine the destination for its own messages. It is recommended this occurs whenever a parent for the end device may change, such as during a new join, or a rejoin. It can also be done periodically to refresh the end device access point in case the parent ZAP has changed. If periodically polled, this should not occur any faster than the default MTORR\_PERIOD of 300 seconds. \_
+This attribute contains the EUI64 long ID of a Control4 router primary ZigBee Access Point.  An end device within the Control4 system should always query this attribute from its parent in order to determine the destination for its own messages. It is recommended this occurs whenever a parent for the end device may change, such as during a new join, or a rejoin. It can also be done periodically to refresh the end device access point in case the parent ZAP has changed. If periodically polled, this should not occur any faster than the default MTORR\_PERIOD of 300 seconds. 
 
 This attribute may be set by a parent to an end device if the network topology requires it.  If an end device has this attribute set by a parent, it should not override the new setting unless it needs to change due to a normal network management event (i.e. such as a rejoin attempt).
 
 Note: when setting the access point information within the stack, the long ID should be set prior to setting the short ID. In some stacks, performing the opposite (setting the short ID first, and then the long ID) will invalidate the short ID with 0xFFFD. 
 
 
-### ACCESS\_POINT\_COST Attribute\_ 
+### ACCESS\_POINT\_COST Attribute
 This attribute contains the cost of a reaching a ZigBee Access Point.  Parent devices track multiple Access Points and select them partially based upon cost. Since end devices only track a single Access Point, they have less use for this parameter, but can query it none-the-less for diagnostic purposes.
 
 
@@ -206,17 +206,17 @@ This attribute contains the cost of a reaching a ZigBee Access Point.  Parent de
 The MESH\_CHANNEL attribute indicates the ZigBee channel that the node is operating on, and is reported to Access Points to make sure it matches.  It is expected this would be the same channel a Control4 ZAP is using, but this isn’t always the case. Depending on hardware design, it is possible for a node to “hear” and join a ZigBee network on a “ghosted” channel. The ZigBee protocol itself does nothing to prevent this. In these cases, the node may appear to function, but encounter significantly poor radio performance. To prevent this, Control4 Controllers actively ensure all the nodes in a mesh are on a correct channel. A Control4 Controller will set this attribute on nodes if it is found to be different than the channel the Controller is expecting. If a node receives a request to set this attribute, it should honor this request and change its ZigBee stack channel to match the request.\_
 
 
-### AVG\_RSSI Attribute\_
+### AVG\_RSSI Attribute
 
 This value can be used to report the RSSI value of packets received by an end device from a parent. Usually a running average is maintained on each incoming packet. The values can help when diagnosing systems with sparse or weak links between nodes. 
 
 
-### AVG\_LQI Attribute\_
+### AVG\_LQI Attribute
 
 This value can be used to report the LQI value of packets received by an end device from a parent. Usually a running average is maintained on each incoming packet. The values can help when diagnosing systems with sparse or weak links between nodes.
 
 
-### BATTERY\_LEVEL Attribute\_
+### BATTERY\_LEVEL Attribute
 
 This value can be used to report the battery level of a battery powered end device. The value is reported as a percentage, from 0 to 100%. The value can be ignored if the end device is not battery powered. It will help the system passively track battery status on nodes, and can be used for diagnostics purposes as well. 
 
@@ -249,7 +249,7 @@ The table below lists cluster specific commands are sent or received by the serv
 | 0x00 | IMMEDIATE\_ANNOUNCE\_COMMAND\_ID | O |
 
 
-### IMMEDIATE\_ANNOUNCE\_COMMAND\_ID\_
+### IMMEDIATE\_ANNOUNCE\_COMMAND\_ID
 
 This command can be sent by Control4 Controller (received by a node) to request that an Announcement be sent immediately. An Announcement is simply the predetermined set of mandatory attributes defined by this document (see section 7 for details). There may be more than one “Announcement” required to report all of the required information (in this case send them back to back). 
 

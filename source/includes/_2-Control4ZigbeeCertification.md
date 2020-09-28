@@ -34,7 +34,7 @@ The following areas of functionality will be tested based upon device type:
 10. Implemented with a General Availability (GA) stack release. 
 11. Uses Control4 compatible stack configuration and SAS attribute set.
 12. Error Vector Magnitude less than 15%.
-	 
+		 
 
 ## Router
 
@@ -59,7 +59,7 @@ Control4 recommends the following joining algorithm to ensure reliable joining. 
 
 1. Set a random channel.
 2. Send out a beacon request.
-3. Handle incoming beacons responses for the ZigBee-Pro specified active scan duration of 3, or 138 milliseconds (note that nodes must match the node they are joining, meaning zserver, parent routers, and all end devices must use the same scan duration). Store up to 16 PAN candidates, each being stored if all of the following criteria are true: 
+3. Handle incoming beacons responses for the ZigBee-Pro specified active scan duration of 3, or 138 milliseconds (note that nodes must match the node they are joining, meaning Zserver, parent routers, and all end devices must use the same scan duration). Store up to 16 PAN candidates, each being stored if all of the following criteria are true: 
 
 - Beacon response has the "permit joining" flag set to true.
 - The stack profile matches the ZigBee-Pro stack profile (2 for secure ZigBee-Pro devices, 0 for non-secure).
@@ -106,14 +106,14 @@ Validation:
 
 ## Uses secure rejoin only
 
-When certain failures occur, the prescribed method of resolving communications problems is for a ZigBee device to rejoin the network. ZigBee-Pro devices can implement two different methods of rejoining network, secure and un-secure. The method for un-secure rejoin is to attempt to rejoin securely using the current network key, and if this fails, fallback to obtaining a network key using the pre-configured link key. This is the HA standard method of rejoining, where the network key may have changed. Since the preconfigured link key ("ZigBeeAlliance09") is well known, this makes it very easy to setup a sniffer and watch for the network key exchange for a device rejoining un-securely. This only applies to centralized trust center mode, however. Control4 uses distributed trust center mode, where each device can allow another device to negotiate a network key while joining. Since there is no reliable method of distributing a network key change in distributed trust center, and since the un-secure method exposes the network key over the air, Control4 strictly disallows this method of rejoining. The primary area of concern is that a parent router does not allow an un-secure device to obtain the network key using the preconfigured link key. This is a policy decision for a router firmware application when running in centralized or distributed trust center mode. The secondary concern is that the device does not attempt to rejoin using an unsecure rejoin. This would create a situation where the network key could be captured by forcing nodes within an installation into a rejoining mode. 
+When certain failures occur, the prescribed method of resolving communications problems is for a ZigBee device to rejoin the network. ZigBee-Pro devices can implement two different methods of rejoining network, secure and un-secure. The method for un-secure rejoin is to attempt to rejoin securely using the current network key, and if this fails, fallback to obtaining a network key using the pre-configured link key. This is the HA standard method of rejoining, where the network key may have changed. Since the preconfigured link key ("ZigBeeAlliance09") is well known, this makes it very easy to setup a sniffer and watch for the network key exchange for a device rejoining un-securely. This only applies to centralized trust center mode, however. Control4 uses distributed trust center mode, where each device can allow another device to negotiate a network key while joining. Since there is no reliable method of distributing a network key change in distributed trust center, and since the un-secure method exposes the network key over the air, Control4 strictly disallows this method of rejoining. The primary area of concern is that a parent router does not allow an un-secure device to obtain the network key using the preconfigured link key. This is a policy decision for a router firmware application when running in centralized or distributed trust center mode. The secondary concern is that the device does not attempt to rejoin using an unsecured rejoin. This would create a situation where the network key could be captured by forcing nodes within an installation into a rejoining mode. 
 
 Validation:
 
-1. Join a device that performs unsecure rejoin to a routing device under test.
+1. Join a device that performs unsecured rejoin to a routing device under test.
 2. Confirm that the routing device under test does not respond to un-secure rejoin requests.
 3. Trigger the device under test to rejoin the network (e.g. generate route failures).
-4. Ensure the device under test does not perform an unsecure rejoin using the preconfigured link key "ZigBeeAlliance09".
+4. Ensure the device under test does not perform an unsecured rejoin using the preconfigured link key "ZigBeeAlliance09".
 
 
 **Test Case 1:** 
@@ -125,7 +125,7 @@ Test device under test always perform secure join. We can verify this through sn
 
 
 **Test case 3:**  
-Test DUT allows only secure joining: Add DUT in network and try to add another unsecure device to the network. To simulate this initiate "allow join" from ZMAN, turn off the controller, click on unsecure device so that it initiates join and DUT should reject this unsecure join. Currently we are not having any ZigBee device that initiate unsecure join so require modification in template, TRAN-2645 to track this modification. 
+Test DUT allows only secure joining: Add DUT in network and try to add another unsecured device to the network. To simulate this initiate "allow join" from ZMAN, turn off the controller, click on unsecured device so that it initiates join and DUT should reject this unsecured join. Currently we are not having any ZigBee device that initiate unsecured join so require modification in template, TRAN-2645 to track this modification. 
 
 
 ## Implements required SSCP as per Control4 router specification
@@ -151,7 +151,7 @@ Also see "Adheres to compatible announcement behavior" below regarding how some 
 
 ## Support for adjustable MTORR period and adjustable Announce Window
 
-Control4 network cluster allow for a controller to configure the device as the network scales. The configuration determines how often the device expects to hear MTORR's, and how quickly the device sends announcement information. This has the combined effect of allowing the device to determine when it is "lost" and must seek the network, and when zserver determines a device is "offline" and no longer in communication with the access points.
+Control4 network cluster allow for a controller to configure the device as the network scales. The configuration determines how often the device expects to hear MTORR's, and how quickly the device sends announcement information. This has the combined effect of allowing the device to determine when it is "lost" and must seek the network, and when Zserver determines a device is "offline" and no longer in communication with the access points.
 
 Validation: 
 
@@ -164,7 +164,7 @@ Confirm device under test allows setting and getting the following attributes on
 
 ## Device performs compatible announcement behavior
 
-End devices and routers both must periodically send announcement information for Zserver to discover the device and mark it online. The period is configurable and is based upon the period of sending Many-To-One-Route-Requests (MTORRs). For routers, this period is communicated to the device using Profile 0xC25D Cluster 0x0001 Attribute 0x0001 (ANNOUNCE_WINDOW) and (0x0002 MTORR_PERIOD). 
+End devices and routers both must periodically send announcement information for Zserver to discover the device and mark it online. The period is configurable and is based upon the period of sending Many-To-One-Route-Requests (MTORRs). For routers, this period is communicated to the device using Profile 0xC25D Cluster 0x0001 Attribute 0x0001 (ANNOUNCE\_WINDOW) and (0x0002 MTORR\_PERIOD). 
 
 See [Control4 ZCL Network Cluster Definition Document v1.09 ]()
 
@@ -194,10 +194,10 @@ Validation:
 
 ## Implements Control4 lost node behavior or equivalent
 
-In the event of a channel change or PAN ID conflict, it is possible for nodes to become abandoned without a viable communication path to an access point. In these events, the device must automatically trigger a lost behavior, where it will seek out the network on the correct channel and PAN. This typically occurs through a rejoin process, first on the channel the device was on, and subsequently on all channels until the network is found. To avoid flooding a network in large installations, the device must not attempt this process more rapidly than once every 10 seconds. After the initial attempt, the device must extend the rejoin interval. Doubling the rejoin interval is recommended, until once per hour is reached. The recommended interval for starting the discovery process is 3 times the MTORR period + 9 seconds for broadcast propagation (configured through Profile 0xC25D Cluster 0x0001 Attribute 0x0002). The rejoin interval must scale based upon the number of Zaps (configured through Profile 0xC25D Cluster 0x0001 Attribute 0x0003). For example, if a device goes lost and seeks a network after 3 MTORR period intervals in a single Zap environment, it must allow for 3x3=9 MTORR periods (+9 seconds) in a 3 Zap environment. This is to handle the case where 2 out of 3 Zaps are not reachable by the device under test, plus maximum broadcast propagation delay.  Upon rejoining a network, the device must attempt to discover the access point on the given channel. The recommended method is to broadcast a manufacturer specific SSCP_REQUEST_PARAMS_COMMAND_ID 0x06 on Profile 0xC25D Cluster 0x0001. Upon receipt of this command, Zserver will broadcast a set channel attribute request on Profile 0xC25D Cluster 0x0001 Attribute 0x000C. The function of the set channel attribute request is twofold: 
+In the event of a channel change or PAN ID conflict, it is possible for nodes to become abandoned without a viable communication path to an access point. In these events, the device must automatically trigger a lost behavior, where it will seek out the network on the correct channel and PAN. This typically occurs through a rejoin process, first on the channel the device was on, and subsequently on all channels until the network is found. To avoid flooding a network in large installations, the device must not attempt this process more rapidly than once every 10 seconds. After the initial attempt, the device must extend the rejoin interval. Doubling the rejoin interval is recommended, until once per hour is reached. The recommended interval for starting the discovery process is 3 times the MTORR period + 9 seconds for broadcast propagation (configured through Profile 0xC25D Cluster 0x0001 Attribute 0x0002). The rejoin interval must scale based upon the number of Zaps (configured through Profile 0xC25D Cluster 0x0001 Attribute 0x0003). For example, if a device goes lost and seeks a network after 3 MTORR period intervals in a single Zap environment, it must allow for 3x3=9 MTORR periods (+9 seconds) in a 3 Zap environment. This is to handle the case where 2 out of 3 Zaps are not reachable by the device under test, plus maximum broadcast propagation delay.  Upon rejoining a network, the device must attempt to discover the access point on the given channel. The recommended method is to broadcast a manufacturer specific SSCP\_REQUEST\_PARAMS\_COMMAND\_ID 0x06 on Profile 0xC25D Cluster 0x0001. Upon receipt of this command, Zserver will broadcast a set channel attribute request on Profile 0xC25D Cluster 0x0001 Attribute 0x000C. The function of the set channel attribute request is twofold: 
 
 1. It ensures there is an access point on the PAN able to communicate to the lost device.
-2. It ensures the lost device is on the correct channel in cases of ghosting behavior (receiving messages on the incorrect channel).  Upon receipt the set channel attribute request, the device under test should compare the current channel to the channel attribute, and if they differ, switch channels to match. Devices that hear this request, including a device under test, should pause sending out their own requests pending a broadcast Zserver set channel attribute request. The design is intended to allow multiple devices to receive the SSCP_REQUEST_PARAMS_COMMAND_ID request signaling a node is lost, and also receive the associated broadcast set channel attribute request that allows them to determine if an access point is found and on what channel.  The pause delay should be randomized between 18 - 30 seconds to allow the broadcast request to propagate the subsequent set channel request to be received, and to provide an extra window for random jitter from requests from multiple nodes.  
+2. It ensures the lost device is on the correct channel in cases of ghosting behavior (receiving messages on the incorrect channel).  Upon receipt the set channel attribute request, the device under test should compare the current channel to the channel attribute, and if they differ, switch channels to match. Devices that hear this request, including a device under test, should pause sending out their own requests pending a broadcast Zserver set channel attribute request. The design is intended to allow multiple devices to receive the SSCP\_REQUEST\_PARAMS\_COMMAND\_ID request signaling a node is lost, and also receive the associated broadcast set channel attribute request that allows them to determine if an access point is found and on what channel.  The pause delay should be randomized between 18 - 30 seconds to allow the broadcast request to propagate the subsequent set channel request to be received, and to provide an extra window for random jitter from requests from multiple nodes.  
 
 Validation:
 
@@ -212,7 +212,7 @@ Validation:
 9. Ensure the device under test migrates away from the router on the wrong channel, and back to the controller on the correct channel. This tests access point detection during lost behavior to prevent islands of routers on incorrect channel.
 
 
-## Implements HA standard polling and fast polling intervals 
+## Implements HA standard polling and fast polling intervals
 
 In their normal operating state, ZigBee end devices shall poll no more frequently than once every 7.5 seconds, except where the cluster specification indicates.  ZigBee end devices may operate with a higher polling rate during commissioning, network maintenance, alarm states, and for short periods after transmitting a message to allow for acknowledgments and or responses to be received quickly, but they must return to the standard rate indicated previously during normal operation.  If a device under test implements fast polling, the device should also implement the poll control cluster. This cluster allows configuring how the device fast polls. Attribute 0x0001 is the long poll interval in quarter seconds. Attribute 0x0002 is the short poll interval in quarter seconds. Attribute 0x0003 is the fast poll timeout in quarter seconds. When configured for fast polling, the device under test should not send messages any faster than once per quarter second and should automatically revert to the long polling interval after the configured fast polling timeout in quarter seconds. See the following documents for details: 
 
@@ -239,7 +239,7 @@ Validation:
 
 ## EVM less than 15%
 
-EVM (Error Vector Magnitude) is a measure of transmitter performance compared to an ideal transmitter. EVM is measured in absolute or offset values. For the purposes of Control4 certification, offset EVM is the primary factor of interest. 802.15.4 allows for up to 35% offset EVM, but EVM is not a single metric. A number of transmitter characteristics can contribute to EVM.  Some silicon, Silicon Labs parts for example, are more stringent about some of the contributing factors that lead to high EVM. For this reason, Silicon Labs recommends limiting a transmitter to below 15% offset EVM to ensure reliable communications. Other vendors may have similar requirements. Control targets 15% offset EVM as the threshold for expected performance, which is more stringent than the ZigBee specification requires. Offset EVM above 15% will typically only be encountered in older external LNA/PA designs, and should not be an issue for newer silicon and LNA/PA designs.   
+EVM (Error Vector Magnitude) is a measure of transmitter performance compared to an ideal transmitter. EVM is measured in absolute or offset values. For the purposes of Control4 certification, offset EVM is the primary factor of interest. 802.15.4 allows for up to 35% offset EVM, but EVM is not a single metric. A number of transmitter characteristics can contribute to EVM.  Some silicon, Silicon Labs parts for example, are more stringent about some of the contributing factors that lead to high EVM. For this reason, Silicon Labs recommends limiting a transmitter to below 15% offset EVM to ensure reliable communications. Other vendors may have similar requirements. Control targets 15% offset EVM as the threshold for expected performance, which is more stringent than the ZigBee specification requires. Offset EVM above 15% will typically only be encountered in older external LNA/PA designs, and should not be an issue for newer silicon and LNA/PA designs.  
 
 Validation:
 
@@ -264,7 +264,7 @@ Validation:
 
 1. Using a sniffer, confirm that the apsTrustCenterAddress is all 0xFFFFFFFFFFFFFFFF (e.g. Transport Key (NWK)→ZigBee Application Support Command→Source Address = 0xFFFFFFFFFFFFFFFF), indicating a Distributed Security network per docs-05-3474-21-0csg-zigbee-specification.pdf section . If the apsTrustCenterAddress is any other value, it indicates a Centralized Security network.
 
-	 
+		 
 ## Uses Control4 compatible stack configuration and SAS attribute set
 
 The following is a stack configuration, and therefore part of the compiled firmware image. These values are must be confirmed with the firmware developer for each vendor specific product. Hops, poll interval, and child table count apply only to routing devices. 
@@ -328,4 +328,5 @@ Quyen Dungan
 Draper, UT 84020-6432
 ph: +1 (801)-523-4223
 e: qdungan@control4.com
+
 
