@@ -20,14 +20,14 @@ The following standards and specifications contain provisions, which through ref
 
 | Term | Definition |
 | --- | --- |
-| Controller | Control4 System Controller running the central processes that manage drivers, communications, and networking. | | There can be multiple Controllers within a system. Each Controller can act as a ZigBee Access Point. |
-| | ZigBee Access Point | A process running on a Control4 Controller that behaves as a ZigBee message aggregator in a Control4 ZigBee network.  All ZigBee messaging on Control4 ZigBee networks go through one or more ZigBee Access 
-| |Points. There can be multiple access points on a single mesh. Also referred to as a ZAP. |
-| ZServer | The process running on a Control4 Controller that manages one or more ZigBee Access Points, and provides an IP 
-| | based API to clients that wish to send and receive messages in the Control4 ZigBee network. There is only one ZServer per 
+| Controller | Control4 System Controller running the central processes that manage drivers, communications, and networking. | There can be multiple Controllers within a system. Each Controller can act as a ZigBee Access Point. |
+| ZigBee Access Point | A process running on a Control4 Controller that behaves as a ZigBee message aggregator in a Control4 | | | ZigBee network.  All ZigBee messaging on Control4 ZigBee networks go through one or more ZigBee Access Points. There |
+| | can be multiple access points on a single mesh. Also referred to as a ZAP. |
+| ZServer | The process running on a Control4 Controller that manages one or more ZigBee Access Points, and provides an IP |
+| | based API to clients that wish to send and receive messages in the Control4 ZigBee network. There is only one ZServer per | 
 | | instance of mesh, but there can be multiple meshes in a single installation.
-| | Director A central process running on a designated Control4 Controller that manages all other Control4 Controllers, 
-| | networking traffic, and drivers within a Control4 system. A single Director can manage one or more ZigBee meshes through 
+| Director | A central process running on a designated Control4 Controller that manages all other Control4 Controllers, |
+| | networking traffic, and drivers within a Control4 system. A single Director can manage one or more ZigBee meshes through |
 | | one or more ZServers. These can reside on different Controllers within the Control4 system. |
 
 
