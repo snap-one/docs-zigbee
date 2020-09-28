@@ -166,7 +166,7 @@ Confirm device under test allows setting and getting the following attributes on
 
 End devices and routers both must periodically send announcement information for Zserver to discover the device and mark it online. The period is configurable and is based upon the period of sending Many-To-One-Route-Requests (MTORRs). For routers, this period is communicated to the device using Profile 0xC25D Cluster 0x0001 Attribute 0x0001 (ANNOUNCE\_WINDOW) and (0x0002 MTORR\_PERIOD). 
 
-See [Control4 ZCL Network Cluster Definition Document v1.09 ]()
+See [Control4 ZCL Network Cluster Definition Document v1.09 ][1]
 
 Validation:
 
@@ -330,3 +330,4 @@ ph: +1 (801)-523-4223
 e: qdungan@control4.com
 
 
+[1]:	https://control4.github.io/docs-zigbee/#control4-zigbee-cluster-for-end-devices
