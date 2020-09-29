@@ -290,8 +290,11 @@ In the case of a unicast Announcements, sending this message every 5-10 minutes 
 The “Announce” or “Identify” packets are sent using the following parameters:
 
 `ZCL message type: report attributes (0x0a)`
+
 `ProfileId: 0xc25d`
+
 `ClusterId: 0x0001`
+
 `Endpoint: anything but 0x00 or 0xff`
 
 Here are the minimal ZCL attributes you’ll need to populate the “Announce” or “Identify” packet.
