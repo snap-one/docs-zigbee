@@ -12,4 +12,4 @@ The DriverWorks SDK support for Zigbee functionality was originally delivered in
 
 For more information, please see the [DriverWorks Zigbee Interface][1] in API Reference Guide.
 
-[1]:	https://control4.github.io/docs-driverworks-api/#zigbee-interface
+[1]:	https://control4.github.io/docs-driverworks-api/#updating-zigbee-device-firmware-using-driverworks
