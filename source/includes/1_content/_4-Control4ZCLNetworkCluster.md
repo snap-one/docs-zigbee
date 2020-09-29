@@ -355,24 +355,28 @@ In the case of Control4 networks, Control4 routers track a best access point bas
 
 When a Control4 end node joins a router, it will query the following information from the router via read attributes requests using the following parameters. 
 
-ZCL message type: read attributes request
-ProfileId: 0xc25d
-ClusterId: 0x0001
-Endpoint: anything but 0x00 or 0xff
+`ZCL message type: read attributes request`
+
+`ProfileId: 0xc25d`
+
+`ClusterId: 0x0001`
+
+`Endpoint: anything but 0x00 or 0xff`
+
 
 Control4 routers respond by providing the following read attributes responses. The end device can then use this information for the best Control4 access point. For example, the following values communicate to an end device that 0x0000 is the preferred access point for this end device.
 
-AttributeId: 0x0008
-AttributeType: ZCL\_INT16U\_ATTRIBUTE\_TYPE
-AttributeValue: 0x0000
+`AttributeId: 0x0008`
+`AttributeType: ZCL\_INT16U\_ATTRIBUTE\_TYPE`
+`AttributeValue: 0x0000`
 
-AttributeId: 0x0009
-AttributeType: ZCL\_IEEE\_ADDRESS\_ATTRIBUTE\_TYPE
-AttributeValue:  EUI64
+`AttributeId: 0x0009`
+`AttributeType: ZCL\_IEEE\_ADDRESS\_ATTRIBUTE\_TYPE`
+`AttributeValue:  EUI64`
 
-AttributeId: 0x000a
-AttributeType: ZCL\_INT8U\_ATTRIBUTE\_TYPE
-AttributeValue: 0x00
+`AttributeId: 0x000a`
+`AttributeType: ZCL\_INT8U\_ATTRIBUTE\_TYPE`
+`AttributeValue: 0x00`
 
 Control4 systems support spanning a mesh across multiple access points through IP, allowing devices out of radio range of each other to communicate. The way an end device discovers which access point is within range is by querying the parent Control4 router or ZAP for the best access point within range. It is therefore important that end devices adhere to the access point information provided by the router/ZAP using these attributes. Simply sending to a predetermined coordinator (0x0000), for example, is not guaranteed to work in some network topologies, such as a pool house out of radio range of a main house. 
 
