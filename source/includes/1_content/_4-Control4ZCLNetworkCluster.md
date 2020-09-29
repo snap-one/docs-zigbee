@@ -299,12 +299,12 @@ The “Announce” or “Identify” packets are sent using the following parame
 
 Here are the minimal ZCL attributes you’ll need to populate the “Announce” or “Identify” packet.
 
-\`AttributeId 0x0007
-\`\`AttributeType 0x42
-\`\`AttributeValue = length+"PROD\_STRING\_MAKE\_IT\_LESS\_THAN\_8\_CHARS"
+`AttributeId 0x0007
+``AttributeType 0x42
+``AttributeValue = length+"PROD\_STRING\_MAKE\_IT\_LESS\_THAN\_8\_CHARS"
 `
-`AttributeId 0x0004\`
-`AttributeType 0x42`
+`AttributeId 0x0004
+``AttributeType 0x42`
 `AttributeValue = length+"01.01.01"`
   
 `AttributeId 0x0005`
