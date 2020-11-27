@@ -11,6 +11,7 @@ Information regarding third-party products is provided solely for educational pu
 
 Control4 retains the right to make changes to this repository or related product specifications and descriptions in this repository, at any time, without notice. Control4 makes no warranty for the use of this repository and assumes no responsibility for any errors that can appear in the repository nor does it make a commitment to update the content contained herein.
 
+
 ## Copyright
 
 Copyright 2020-2021 Wirepath Home Systems, LLC. All rights reserved.
