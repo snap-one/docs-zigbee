@@ -5,7 +5,7 @@
 
 This content is to be used as a guide for implementation and certification of the Control4 Networking Cluster on an OEM product so that it can interoperate optimally with a Control4 System Controller. 
 
-The content provides certification test details of behavior of ZigBee devices that implement the Control4 Large Network Cluster. During development, a Control4 controller with ZigBee capability can be utilized to test many of these functions using the ‘zman’command line interface present on the controller. This application allows direct control over the ZigBee server running on that controller. A ZigBee sniffer is also required. Finally, a method of measuring radio performance, such as error vector magnitude (EVM) and receive sensitivity.  
+The content provides certification test details of behavior of ZigBee devices that implement the Control4 Large Network Cluster. During development, a Control4 controller with ZigBee capability can be utilized to test many of these functions using the ‘zman’command line interface present on the controller. This application allows direct control over the ZigBee server running on that controller. A ZigBee sniffer is required as well as a method of measuring radio performance, such as error vector magnitude (EVM) and receive sensitivity.  
 
 Preliminary Setup:
 
