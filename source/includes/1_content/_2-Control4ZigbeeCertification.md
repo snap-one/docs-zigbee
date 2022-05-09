@@ -3,7 +3,7 @@
 
 ## Overview
 
-This content is to be used as a guide for implementation and certification of the Control4 Networking Cluster on an OEM product so that it can interoperate optimally with a Control4 System Controller. 
+This content is to be used as a guide for the implementation and certification of the Control4 Networking Cluster on an OEM product so that it can interoperate optimally with a Control4 System Controller. 
 
 The content provides certification test details of behavior of ZigBee devices that implement the Control4 Large Network Cluster. During development, a Control4 controller with ZigBee capability can be utilized to test many of these functions using the ‘zman’command line interface present on the controller. This application allows direct control over the ZigBee server running on that controller. A ZigBee sniffer is required as well as a method of measuring radio performance, such as error vector magnitude (EVM) and receive sensitivity.  
 
@@ -34,7 +34,7 @@ The following areas of functionality will be tested based upon device type:
 10. Implemented with a General Availability (GA) stack release. 
 11. Uses Control4 compatible stack configuration and SAS attribute set.
 12. Error Vector Magnitude less than 15%.
-			 
+				 
 
 ## Router
 
@@ -264,7 +264,7 @@ Validation:
 
 1. Using a sniffer, confirm that the apsTrustCenterAddress is all 0xFFFFFFFFFFFFFFFF (e.g. Transport Key (NWK)→ZigBee Application Support Command→Source Address = 0xFFFFFFFFFFFFFFFF), indicating a Distributed Security network per docs-05-3474-21-0csg-zigbee-specification.pdf section . If the apsTrustCenterAddress is any other value, it indicates a Centralized Security network.
 
-			 
+				 
 ## Uses Control4 compatible stack configuration and SAS attribute set
 
 The following is a stack configuration, and therefore part of the compiled firmware image. These values are must be confirmed with the firmware developer for each vendor specific product. Hops, poll interval, and child table count apply only to routing devices. 
