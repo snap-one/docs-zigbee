@@ -309,14 +309,6 @@
             <a href="#license-copyright-and-trademark" class="toc-h1 toc-link" data-title="License, Copyright, and Trademark">License, Copyright, and Trademark</a>
           </li>
           <li>
-            <a href="#what-s-new" class="toc-h1 toc-link" data-title="What’s New">What’s New</a>
-              <ul class="toc-list-h2">
-                  <li>
-                    <a href="#what-s-new-what-s-new-in-3-4-2" class="toc-h2 toc-link" data-title="What’s New in 3.4.2">What’s New in 3.4.2</a>
-                  </li>
-              </ul>
-          </li>
-          <li>
             <a href="#control4-zigbee-certification" class="toc-h1 toc-link" data-title="Control4 Zigbee Certification">Control4 Zigbee Certification</a>
               <ul class="toc-list-h2">
                   <li>
@@ -422,14 +414,6 @@
           <li>
             <a href="#control4-zigbee-api" class="toc-h1 toc-link" data-title="Control4 Zigbee API">Control4 Zigbee API</a>
           </li>
-          <li>
-            <a href="#control4-zigbee-capabilities" class="toc-h1 toc-link" data-title="Control4 Zigbee Capabilities">Control4 Zigbee Capabilities</a>
-              <ul class="toc-list-h2">
-                  <li>
-                    <a href="#control4-zigbee-capabilities-zigbee3" class="toc-h2 toc-link" data-title="zigbee3">zigbee3</a>
-                  </li>
-              </ul>
-          </li>
       </ul>
         <ul class="toc-footer">
             <li><a href='https://github.com/lord/slate'>Documentation Powered by Slate</a></li>
@@ -474,23 +458,8 @@ Salt Lake City, UT 84020 USA</p>
 
 <p><a href="www.control4.com">http://www.control4.com</a></p>
 
-<h1 id='what-s-new'>What’s New</h1><h2 id='what-s-new-what-s-new-in-3-4-2'>What’s New in 3.4.2</h2><h3 id='what-s-new-what-s-new-in-3-4-2-capabilities'>Capabilities</h3>
-<p>Beginning with O.S. release 3.4.2, the zigbee3 capability is discoverable as its root element exists in several driver’s XML code. <strong>Note that Control4 is NOT supporting ZigBee3 meshes for third party driver developed devices in OS 3.4.2.</strong> This functionality will be available in a future release.</p>
-
 <h1 id='control4-zigbee-certification'>Control4 Zigbee Certification</h1><h2 id='control4-zigbee-certification-overview'>Overview</h2>
 <p>This content is to be used as a guide for the implementation and certification of the Control4 Networking Cluster on an OEM product so that it can interoperate with a Control4 System Controller.</p>
-
-<p>The content provides certification test details of behavior of ZigBee devices that implement the Control4 Large Network Cluster. During development, a Control4 controller with ZigBee capability can be utilized to test many of these functions using the ‘zman’command line interface present on the controller. This application allows direct control over the ZigBee server running on that controller. A ZigBee sniffer is required as well as a method of measuring radio performance, such as error vector magnitude (EVM) and receive sensitivity.</p>
-
-<p>Preliminary Setup:</p>
-
-<ol>
-<li>ssh to the controller at: root@&lt;controller ip&gt; password: t0talc0ntr0l4!</li>
-<li>Type: sysman disable director</li>
-<li>Type: sysman enable zap</li>
-<li>Type: sysman enable zserver</li>
-<li>Type: zman</li>
-</ol>
 
 <p>The process of certifying a device with Control4 is to send two units running validation firmware to Control4 for certification testing, as well as providing instructions on how to enter a FCC or manufacturing test mode for streaming. Optionally, an additional unit may be sent with manufacturing test firmware for this purpose.</p>
 
@@ -509,7 +478,7 @@ Salt Lake City, UT 84020 USA</p>
 <li>Implemented with a General Availability (GA) stack release.</li>
 <li>Uses Control4 compatible stack configuration and SAS attribute set.</li>
 <li>Error Vector Magnitude less than 15%.
-                 </li>
+                     </li>
 </ol>
 <h2 id='control4-zigbee-certification-router'>Router</h2>
 <p>In addition to the above, router implementations also require the following:</p>
@@ -1403,11 +1372,6 @@ This attribute may be set by parent Control4 router or ZAP if the network topolo
 </ul>
 
 <p>For more information, please see the <a href="https://snap-one.github.io/docs-driverworks-api/#updating-zigbee-device-firmware-using-driverworks">DriverWorks Zigbee Interface</a> in API Reference Guide.</p>
-
-<p><h1 id='control4-zigbee-capabilities'>Control4 Zigbee Capabilities</h1><h2 id='control4-zigbee-capabilities-zigbee3'>zigbee3</h2>
-<p>Beginning with O.S. release 3.4.2, the zigbee3 capability is discoverable as its root element exists in several driver’s XML code. <strong>Note that Control4 is NOT supporting ZigBee3 meshes for third party driver developed devices in OS 3.4.2.</strong> This functionality will be available in a future release.</p>
-<h6 id='control4-zigbee-capabilities-zigbee3-additional-end-device-attributes-available-with-no-functionality-from-3-4-2'>Available with no functionality from 3.4.2.</h6><h3 id='control4-zigbee-capabilities-zigbee3-signature'>Signature</h3>
-<p><code>&lt;zigbee3&gt;&lt;/zigbee3&gt;</code></p></p>
 
       </div>
       <div class="dark-box">
