@@ -538,17 +538,7 @@ e: henk.veldhuis@de.tuv.com
 
 **Control4**
 
-Contact:
-
-Quyen Dungan
-
-11734 S. Election Road
-
-Draper, UT 84020-6432
-
-ph: +1 (801)-523-4223
-
-e: qdungan@control4.com
+e: c4iq@adiglobal.com
 
 
 [1]:	https://snap-one.github.io/docs-zigbee/#control4-zigbee-cluster-for-end-devices
